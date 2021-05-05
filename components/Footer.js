@@ -8,7 +8,7 @@ export default function Footer() {
   return (
     <>
       <Flex
-        direction="row"
+        direction={{ base: "column", md: "row" }}
         align="center"
         justify="space-around"
         bg="#2d2d2d"
@@ -24,7 +24,13 @@ export default function Footer() {
           width={isLargerThan800 ? "300" : "200"}
           height={isLargerThan800 ? "150" : "100"}
         />
-        <Flex direction="column" align="start" justify="space-around">
+        <Flex
+          direction="column"
+          align="start"
+          justify="space-around"
+          m={8}
+          minW="150px"
+        >
           <Heading as="h5" size="md" px={1} py={4}>
             Site Links
           </Heading>
