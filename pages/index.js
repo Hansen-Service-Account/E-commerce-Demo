@@ -32,7 +32,7 @@ export default function Home({ homePageEntry }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   const homePageEntry = await getHomePageImageSections();
 
   return {
