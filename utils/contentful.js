@@ -10,6 +10,6 @@ export const getHomePageImageSections = async () => {
     const homePageEntry = await client.getEntry(HOME_PAGE_ID);
     return homePageEntry;
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
   }
 };
