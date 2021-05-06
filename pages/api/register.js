@@ -1,7 +1,8 @@
 import argon2 from "argon2";
 import User from "../../models/user";
+import withSession from "../../middleware/session";
 
-export default async (req, res) => {
+export default withSession(async (req, res) => {
   const {
     firstName,
     lastName,
@@ -10,15 +11,25 @@ export default async (req, res) => {
     streetAddress2,
     city,
     country,
-    state,
+    countyState,
     postalZipCode,
     phone,
     email,
     customerType,
     password,
   } = req.body;
-  console.log(req.body);
   try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      console.log("error");
+      res.json({
+        error: {
+          field: "email",
+          message: "User with this email already exists",
+        },
+      });
+      return;
+    }
     const hashedPassword = await argon2.hash(password);
     const user = new User({
       firstName,
@@ -28,7 +39,7 @@ export default async (req, res) => {
       streetAddress2,
       city,
       country,
-      state,
+      countyState,
       postalZipCode,
       phone,
       email,
@@ -36,8 +47,11 @@ export default async (req, res) => {
       password: hashedPassword,
     });
     const newUser = await user.save();
+
+    req.session.set("userId", newUser._id);
+    await req.session.save();
     res.status(200).json(newUser);
   } catch (err) {
     console.log(err.message);
   }
-};
+});

@@ -16,7 +16,7 @@ import { ChevronDownIcon, HamburgerIcon } from "@chakra-ui/icons";
 import UserButton from "./UserButton";
 import { isServer } from "../utils/isServer";
 
-const Navigation = ({ isLargerThan1024, user }) => {
+const Navigation = ({ isLargerThan1024, username }) => {
   return (
     <>
       {isLargerThan1024 || isServer() ? (
@@ -42,7 +42,14 @@ const Navigation = ({ isLargerThan1024, user }) => {
               Contact
             </Link>
           </NextLink>
-          <UserButton isLargerThan1024={isLargerThan1024} user={user} />
+          {username ? null : (
+            <NextLink href="/register" passHref>
+              <Link px={4} fontSize="xl">
+                Register
+              </Link>
+            </NextLink>
+          )}
+          <UserButton isLargerThan1024={isLargerThan1024} username={username} />
         </Flex>
       ) : (
         <>

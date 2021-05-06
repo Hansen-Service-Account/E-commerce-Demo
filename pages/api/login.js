@@ -24,7 +24,7 @@ export default withSession(async (req, res) => {
 
     const { _doc } = user;
     const { password, ...userInfo } = _doc;
-    res.status(200).json(userInfo);
+    res.status(200).json({ isLoggedIn: true, userInfo });
   } catch (error) {
     res
       .status(500)

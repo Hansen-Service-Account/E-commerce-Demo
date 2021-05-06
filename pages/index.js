@@ -6,7 +6,7 @@ import { dbConnect } from "../middleware/db";
 import withSession from "../middleware/session";
 import User from "../models/user";
 
-export default function Home({ homePageEntry, user }) {
+export default function Home({ homePageEntry, username }) {
   const {
     firstSection,
     secondSection,
@@ -27,7 +27,7 @@ export default function Home({ homePageEntry, user }) {
   ];
   return (
     <>
-      <Header user={user} />
+      <Header username={username} />
       <Hero homePageImageSections={homePageImageSections} />
       <Footer />
     </>
@@ -37,7 +37,7 @@ export default function Home({ homePageEntry, user }) {
 export const getServerSideProps = withSession(async function ({ req, res }) {
   const homePageEntry = await getHomePageImageSections();
   dbConnect();
-  const user = await User.findOne({ _id: req.session.userId });
+  const user = await User.findOne({ _id: req.session.get("userId") });
   if (!user) {
     return {
       props: { homePageEntry },
@@ -53,7 +53,7 @@ export const getServerSideProps = withSession(async function ({ req, res }) {
   return {
     props: {
       homePageEntry,
-      user,
+      username: user.firstName,
     },
   };
 });

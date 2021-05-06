@@ -32,7 +32,7 @@ const schema = new Schema(
       type: String,
       required: true,
     },
-    state: {
+    countyState: {
       type: String,
       required: true,
     },

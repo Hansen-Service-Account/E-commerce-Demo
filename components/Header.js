@@ -2,11 +2,11 @@ import { Flex } from "@chakra-ui/layout";
 import Navigation from "./Navigation";
 import { HANSEN_RED } from "../utils/constants";
 import { useMediaQuery } from "@chakra-ui/media-query";
-
 import { isServer } from "../utils/isServer";
 import { Img } from "@chakra-ui/react";
+import NextLink from "next/link";
 
-const Header = ({ user }) => {
+const Header = ({ username }) => {
   const [isLargerThan800] = useMediaQuery("(min-width:800px)");
   const [isLargerThan1024] = useMediaQuery("(min-width:1024px)");
 
@@ -21,12 +21,15 @@ const Header = ({ user }) => {
       color="black"
       borderBottom={`${HANSEN_RED} 2px solid`}
     >
-      <Img
-        src="/hansenlogo.jpg"
-        width={isLargerThan800 || isServer() ? "300" : "200"}
-        height={isLargerThan800 || isServer() ? "150" : "100"}
-      />
-      <Navigation isLargerThan1024={isLargerThan1024} user={user} />
+      <NextLink href="/">
+        <Img
+          src="/hansenlogo.jpg"
+          width={isLargerThan800 || isServer() ? "300" : "200"}
+          height={isLargerThan800 || isServer() ? "150" : "100"}
+          cursor="pointer"
+        />
+      </NextLink>
+      <Navigation isLargerThan1024={isLargerThan1024} username={username} />
     </Flex>
   );
 };

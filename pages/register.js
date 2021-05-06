@@ -1,12 +1,13 @@
 import Header from "../components/Header";
-import LoginForm from "../components/LoginForm";
 import withSession from "../middleware/session";
 
-export default function login() {
+import RegistrationForm from "../components/RegistrationForm";
+
+export default function register() {
   return (
     <>
       <Header />
-      <LoginForm />
+      <RegistrationForm />
     </>
   );
 }
