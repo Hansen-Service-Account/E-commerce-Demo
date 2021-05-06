@@ -12,7 +12,6 @@ const Hero = ({ homePageImageSections }) => {
             width="300"
             height="120"
             layout="responsive"
-            priority={true}
           />
         </Box>
       ))}
