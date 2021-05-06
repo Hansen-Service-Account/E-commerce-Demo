@@ -2,5 +2,5 @@ module.exports = {
   images: {
     domains: ["images.ctfassets.net"],
   },
-  distDir: "out",
+  distDir: "public",
 };
