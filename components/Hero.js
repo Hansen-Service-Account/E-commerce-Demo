@@ -1,4 +1,4 @@
-import { Image } from "@chakra-ui/image";
+import Image from "next/image";
 import { Box } from "@chakra-ui/layout";
 
 const Hero = ({ homePageImageSections }) => {
@@ -6,7 +6,14 @@ const Hero = ({ homePageImageSections }) => {
     <Box>
       {homePageImageSections.map((section) => (
         <Box py={3} key={section.imageURL}>
-          <Image src={`https:${section.imageURL}`} alt={section.alt} />
+          <Image
+            src={`https:${section.imageURL}`}
+            alt={section.alt}
+            width="300"
+            height="120"
+            layout="responsive"
+            loading="eager"
+          />
         </Box>
       ))}
     </Box>

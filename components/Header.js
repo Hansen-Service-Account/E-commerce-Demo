@@ -25,6 +25,7 @@ const Header = () => {
         src="/hansenlogo.jpg"
         width={isLargerThan800 || isServer() ? "300" : "200"}
         height={isLargerThan800 || isServer() ? "150" : "100"}
+        priority={true}
       />
       <Navigation isLargerThan1024={isLargerThan1024} />
     </Flex>
