@@ -1,4 +1,3 @@
-import argon2 from "argon2";
 import User from "../../models/user";
 import withSession from "../../middleware/session";
 
@@ -30,7 +29,7 @@ export default withSession(async (req, res) => {
       });
       return;
     }
-    const hashedPassword = await argon2.hash(password);
+    const hashedPassword = await require("argon2").hash(password);
     const user = new User({
       firstName,
       lastName,
