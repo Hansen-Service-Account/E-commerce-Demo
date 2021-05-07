@@ -91,7 +91,10 @@ const Navigation = ({ isLargerThan1024, username }) => {
                 </MenuItem>
               </MenuList>
             </Menu>
-            <UserButton isLargerThan1024={isLargerThan1024} user={user} />
+            <UserButton
+              isLargerThan1024={isLargerThan1024}
+              username={username}
+            />
           </Flex>
         </>
       )}
