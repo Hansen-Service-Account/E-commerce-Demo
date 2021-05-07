@@ -1,6 +1,5 @@
 import User from "../../models/user";
 import withSession from "../../middleware/session";
-import bcrypt from "bcryptjs";
 
 export default withSession(async (req, res) => {
   try {
@@ -14,7 +13,7 @@ export default withSession(async (req, res) => {
         },
       });
     }
-    const valid = await bcrypt.compare(req.body.password, user.password);
+    const valid = req.body.password === user.password;
     if (!valid) {
       return res.json({
         error: { field: "password", message: "The password is incorrect" },
