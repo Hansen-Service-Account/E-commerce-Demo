@@ -7,7 +7,6 @@ export default withSession(async (req, res) => {
   try {
     await dbConnect();
     const user = await User.findOne({ email: req.body.email });
-    console.log(user);
     if (!user) {
       return res.json({
         error: {
