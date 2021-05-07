@@ -1,6 +1,6 @@
 import User from "../../models/user";
 import withSession from "../../middleware/session";
-import argon2 from "argon2";
+import bcrypt from "bcrypt";
 
 export default withSession(async (req, res) => {
   try {
@@ -14,7 +14,7 @@ export default withSession(async (req, res) => {
         },
       });
     }
-    const valid = await argon2.verify(user.password, req.body.password);
+    const valid = await bcrypt.compare(req.body.password, user.password);
     if (!valid) {
       return res.json({
         error: { field: "password", message: "The password is incorrect" },

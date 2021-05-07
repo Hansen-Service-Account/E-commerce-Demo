@@ -1,6 +1,6 @@
 import User from "../../models/user";
 import withSession from "../../middleware/session";
-import argon2 from "argon2";
+import bcrypt from "bcrypt";
 
 export default withSession(async (req, res) => {
   const {
@@ -30,7 +30,7 @@ export default withSession(async (req, res) => {
       });
       return;
     }
-    const hashedPassword = await argon2.hash(password);
+    const hashedPassword = await bcrypt.hash(password, 12);
     const user = new User({
       firstName,
       lastName,
