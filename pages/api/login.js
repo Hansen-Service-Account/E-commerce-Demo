@@ -3,6 +3,7 @@ import withSession from "../../middleware/session";
 
 export default withSession(async (req, res) => {
   try {
+    console.log("Reached");
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
       return res.json({
