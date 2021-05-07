@@ -1,6 +1,6 @@
 import User from "../../models/user";
 import withSession from "../../middleware/session";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 export default withSession(async (req, res) => {
   try {
