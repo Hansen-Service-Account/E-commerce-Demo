@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 
 export const dbConnect = async () => {
-  console.log("Connecting database");
   try {
-    if (mongoose.connection.readyState >= 1) return;
+    if (mongoose.connection.readyState >= 1) {
+      console.log(`Connected to ${mongoose.connection.host}`);
+    }
     const connect = await mongoose.connect(
       process.env.NEXT_PUBLIC_MONGODB_URI,
       {
