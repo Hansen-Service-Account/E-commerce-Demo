@@ -8,7 +8,7 @@ export default function profile({ username }) {
 }
 
 export const getServerSideProps = withSession(async function ({ req, res }) {
-  dbConnect();
+  await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   if (!user) {
     return {

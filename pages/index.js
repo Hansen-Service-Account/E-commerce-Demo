@@ -36,7 +36,7 @@ export default function Home({ homePageEntry, username }) {
 
 export const getServerSideProps = withSession(async function ({ req, res }) {
   const homePageEntry = await getHomePageImageSections();
-  dbConnect();
+  await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   if (!user) {
     return {
