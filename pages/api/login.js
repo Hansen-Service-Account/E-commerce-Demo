@@ -1,9 +1,11 @@
 import User from "../../models/user";
 import withSession from "../../middleware/session";
+import { dbConnect } from "../../middleware/db";
+import bcrypt from "bcryptjs";
 
 export default withSession(async (req, res) => {
   try {
-    console.log("Reached");
+    await dbConnect();
     const user = await User.findOne({ email: req.body.email });
     console.log(user);
     if (!user) {
@@ -14,7 +16,7 @@ export default withSession(async (req, res) => {
         },
       });
     }
-    const valid = req.body.password === user.password;
+    const valid = await bcrypt.compare(req.body.password, user.password);
     if (!valid) {
       return res.json({
         error: { field: "password", message: "The password is incorrect" },

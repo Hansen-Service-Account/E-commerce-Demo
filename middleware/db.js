@@ -1,20 +1,32 @@
 import mongoose from "mongoose";
 
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
 export const dbConnect = async () => {
-  try {
-    if (mongoose.connection.readyState >= 1) {
-      console.log(`Connected to ${mongoose.connection.host}`);
-    }
-    const connect = await mongoose.connect(
-      process.env.NEXT_PUBLIC_MONGODB_URI,
-      {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        useFindAndModify: true,
-      }
-    );
-    console.log(`Connected to ${connect.connection.host}`);
-  } catch (err) {
-    console.log(err.message);
+  if (cached.conn) {
+    return cached.conn;
   }
+
+  if (!cached.promise) {
+    const opts = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      bufferCommands: false,
+      bufferMaxEntries: 0,
+      useFindAndModify: false,
+      useCreateIndex: true,
+    };
+
+    cached.promise = mongoose
+      .connect(process.env.NEXT_PUBLIC_MONGODB_URI, opts)
+      .then((mongoose) => {
+        return mongoose;
+      });
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
 };

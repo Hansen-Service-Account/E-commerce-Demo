@@ -1,6 +1,7 @@
 import User from "../../models/user";
 import withSession from "../../middleware/session";
 import bcrypt from "bcryptjs";
+import { dbConnect } from "../../middleware/db";
 
 export default withSession(async (req, res) => {
   const {
@@ -19,6 +20,7 @@ export default withSession(async (req, res) => {
     password,
   } = req.body;
   try {
+    await dbConnect();
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       console.log("error");
