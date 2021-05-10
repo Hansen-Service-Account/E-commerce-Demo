@@ -3,7 +3,7 @@ import withSession from "../middleware/session";
 
 import RegistrationForm from "../components/RegistrationForm";
 
-export default function register() {
+export default function registerPage() {
   return (
     <>
       <Header />

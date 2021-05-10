@@ -3,7 +3,7 @@ import withSession from "../middleware/session";
 import { dbConnect } from "../middleware/db";
 import User from "../models/user";
 
-export default function profile({ username }) {
+export default function profilePage({ username }) {
   return <Header username={username} />;
 }
 

@@ -6,13 +6,9 @@ import { dbConnect } from "../middleware/db";
 import withSession from "../middleware/session";
 import User from "../models/user";
 
-export default function Home({ homePageEntry, username }) {
-  const {
-    firstSection,
-    secondSection,
-    thirdSection,
-    fourthSection,
-  } = homePageEntry.fields;
+export default function homePage({ homePageEntry, username }) {
+  const { firstSection, secondSection, thirdSection, fourthSection } =
+    homePageEntry.fields;
   const homePageImageSections = [
     { imageURL: firstSection.fields.file.url, alt: firstSection.fields.title },
     {

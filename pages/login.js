@@ -2,7 +2,7 @@ import Header from "../components/Header";
 import LoginForm from "../components/LoginForm";
 import withSession from "../middleware/session";
 
-export default function login() {
+export default function loginPage() {
   return (
     <>
       <Header />
