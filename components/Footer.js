@@ -1,10 +1,17 @@
 import { Box, Center, Flex, Heading, Link } from "@chakra-ui/layout";
-import { useMediaQuery } from "@chakra-ui/react";
-import Image from "next/image";
+import { useMediaQuery, Img } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { useEffect, useState } from "react";
+import { getHomePageImageSections } from "../utils/contentful";
+import { HOME_PAGE_ID } from "../utils/constants";
 
-export default function Footer() {
+export default function Footer({}) {
   const [isLargerThan800] = useMediaQuery("(min-width:800px)");
+  const [logoURL, setLogoURL] = useState("");
+  useEffect(async () => {
+    const { fields } = await getHomePageImageSections(HOME_PAGE_ID);
+    setLogoURL(fields.siteLogo.fields.file.url);
+  }, [HOME_PAGE_ID]);
   return (
     <>
       <Flex
@@ -17,10 +24,9 @@ export default function Footer() {
         py={24}
         color="white"
       >
-        <Image
-          src="/hansenlogo.jpg"
+        <Img
+          src={logoURL}
           alt="Hansen Technologies Logo"
-          layout="fixed"
           width={isLargerThan800 ? "300" : "200"}
           height={isLargerThan800 ? "150" : "100"}
         />
@@ -50,10 +56,9 @@ export default function Footer() {
             </Link>
           </NextLink>
         </Flex>
-        <Image
-          src="/hansenlogo.jpg"
+        <Img
+          src={logoURL}
           alt="Hansen Technologies Logo"
-          layout="fixed"
           width={isLargerThan800 ? "300" : "200"}
           height={isLargerThan800 ? "150" : "100"}
         />

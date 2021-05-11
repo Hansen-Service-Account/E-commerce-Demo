@@ -36,7 +36,7 @@ const ProductDetail = ({ product, controls }) => {
           <Heading as="h4" size="lg" color="#b39573">
             {product.name}
           </Heading>
-          <Text>{product.marketingTagLine}</Text>
+          <Text py={2}>{product.marketingTagLine}</Text>
           <List>
             <ListItem pb={2}>
               <Heading as="h5" size="md" color="#b39573" pb={2}>
