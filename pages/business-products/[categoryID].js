@@ -34,7 +34,7 @@ export default function businessCategoryID({ username, products, quoteId }) {
       false
     );
     setAdding(true);
-    await fetch(`http://localhost:3000/api/quotes/${quoteId}/items`, {
+    await fetch(`/api/quotes/${quoteId}/items`, {
       method: "POST",
       body: JSON.stringify({ productId }),
       headers: { "Content-Type": "application/json" },
