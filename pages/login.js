@@ -1,3 +1,4 @@
+import Footer from "../components/Footer";
 import Header from "../components/Header";
 import LoginForm from "../components/LoginForm";
 import withSession from "../middleware/session";
@@ -7,6 +8,7 @@ export default function loginPage() {
     <>
       <Header />
       <LoginForm />
+      <Footer />
     </>
   );
 }

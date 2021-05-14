@@ -1,12 +1,16 @@
 import { Button } from "@chakra-ui/button";
-import { useDisclosure } from "@chakra-ui/hooks";
-import { AddIcon, InfoIcon } from "@chakra-ui/icons";
+import { Icon, InfoIcon } from "@chakra-ui/icons";
 import { Img } from "@chakra-ui/image";
-import { Badge, Box, Divider, Flex, Text } from "@chakra-ui/layout";
-import ProductDetail from "./ProductDetail";
+import { Box, Divider, Flex, Heading, Text } from "@chakra-ui/layout";
+import { FaCartPlus } from "react-icons/fa";
 
-const ListView = ({ product, isLoggedIn }) => {
-  const controls = useDisclosure();
+const ListView = ({
+  product,
+  isLoggedIn,
+  setCurrentProduct,
+  controls,
+  addToCart,
+}) => {
   return (
     <>
       <Flex
@@ -23,10 +27,10 @@ const ListView = ({ product, isLoggedIn }) => {
       >
         <Img src="https://via.placeholder.com/200" justifySelf="start" />
         <Flex justifyContent="space-between" w="80%">
-          <Box px={4}>
-            <Badge variant="outline" fontSize="lg" colorScheme="green">
+          <Box px={6}>
+            <Heading as="h4" size="md" color="tomato">
               {product.name}
-            </Badge>
+            </Heading>
             <Divider my={4} />
             <Text as="p">{product.marketingTagLine}</Text>
             <Divider my={4} />
@@ -37,7 +41,12 @@ const ListView = ({ product, isLoggedIn }) => {
           </Box>
           <Flex direction="column" justifyContent="center">
             {isLoggedIn ? (
-              <Button colorScheme="green" my={2} leftIcon={<AddIcon />}>
+              <Button
+                colorScheme="teal"
+                my={2}
+                leftIcon={<Icon as={FaCartPlus} />}
+                onClick={() => addToCart(product.id)}
+              >
                 ADD PRODUCT
               </Button>
             ) : null}
@@ -46,7 +55,11 @@ const ListView = ({ product, isLoggedIn }) => {
               variant="outline"
               my={2}
               leftIcon={<InfoIcon />}
-              onClick={controls.onOpen}
+              onClick={() => {
+                setCurrentProduct({ ...product });
+                console.log(product);
+                controls.onOpen();
+              }}
             >
               PRODUCT DETAILS
             </Button>
@@ -54,7 +67,6 @@ const ListView = ({ product, isLoggedIn }) => {
         </Flex>
       </Flex>
       <Divider my={4} w="90%" mx="auto" borderColor="#e32525" />
-      <ProductDetail controls={controls} product={product} />
     </>
   );
 };

@@ -1,6 +1,7 @@
 import Header from "../../components/Header";
 import fetch from "node-fetch";
 import {
+  BUSINESS_SUB_CATEGORIES,
   HANSEN_RED,
   MOBILE_PRODUCTS_ENDPOINT,
   RESIDENTIAL_SUB_CATEGORIES,
@@ -8,6 +9,8 @@ import {
 import withSession from "../../middleware/session";
 import { dbConnect } from "../../middleware/db";
 import User from "../../models/user";
+import { getHomePageImageSections } from "../../utils/contentful";
+import Hero from "../../components/Hero";
 import ProductsDisplay from "../../components/ProductsDisplay";
 import { useState } from "react";
 import { Badge, Flex, Heading } from "@chakra-ui/layout";
@@ -17,7 +20,7 @@ import CategorySelection from "../../components/CategorySelection";
 import QuoteCart from "../../components/QuoteCart";
 import useQuote from "../../hooks/useQuote";
 
-export default function residentialCategoryID({ username, products, quoteId }) {
+export default function businessCategoryID({ username, products, quoteId }) {
   const isLoggedIn = !!username;
   const [viewMode, setViewMode] = useState("cardview");
   const { quote, mutateQuote } = useQuote(quoteId);
@@ -42,10 +45,7 @@ export default function residentialCategoryID({ username, products, quoteId }) {
   return (
     <>
       <Header username={username} />
-      <CategorySelection
-        type="residential"
-        categories={RESIDENTIAL_SUB_CATEGORIES}
-      />
+      <CategorySelection type="business" categories={BUSINESS_SUB_CATEGORIES} />
       <Flex justifyContent="space-between" w="80%" mx="auto" mt={8}>
         <Flex justifyContent="center" alignItems="center">
           <Heading as="h2" size="xl" textAlign="center" color="#b39573" mx={2}>

@@ -5,8 +5,15 @@ import Footer from "../components/Footer";
 import { dbConnect } from "../middleware/db";
 import withSession from "../middleware/session";
 import User from "../models/user";
+import useQuote from "../hooks/useQuote";
+import QuoteCart from "../components/QuoteCart";
 
-export default function homePage({ homePageEntry, username }) {
+export default function homePage({
+  homePageEntry,
+  username,
+  initialLogoSrc,
+  quoteId,
+}) {
   const { firstSection, secondSection, thirdSection, fourthSection } =
     homePageEntry.fields;
   const homePageImageSections = [
@@ -21,10 +28,12 @@ export default function homePage({ homePageEntry, username }) {
       alt: fourthSection.fields.title,
     },
   ];
+
   return (
     <>
-      <Header username={username} />
+      <Header username={username} initialLogoSrc={initialLogoSrc} />
       <Hero homePageImageSections={homePageImageSections} />
+      {username ? <QuoteCart quoteId={quoteId} /> : null}
       <Footer />
     </>
   );
@@ -34,9 +43,11 @@ export const getServerSideProps = withSession(async function ({ req, res }) {
   const homePageEntry = await getHomePageImageSections();
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
+  const quoteId = req.session.get("quoteId");
+  const initialLogoSrc = "https://via.placeholder.com/300x150";
   if (!user) {
     return {
-      props: { homePageEntry },
+      props: { homePageEntry, initialLogoSrc },
     };
     // return {
     //   redirect: {
@@ -50,6 +61,8 @@ export const getServerSideProps = withSession(async function ({ req, res }) {
     props: {
       homePageEntry,
       username: user.firstName,
+      initialLogoSrc,
+      quoteId,
     },
   };
 });

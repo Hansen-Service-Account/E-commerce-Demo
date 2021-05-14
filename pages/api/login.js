@@ -2,6 +2,7 @@ import User from "../../models/user";
 import withSession from "../../middleware/session";
 import { dbConnect } from "../../middleware/db";
 import bcrypt from "bcryptjs";
+import fetch from "node-fetch";
 
 export default withSession(async (req, res) => {
   try {
@@ -21,13 +22,33 @@ export default withSession(async (req, res) => {
         error: { field: "password", message: "The password is incorrect" },
       });
     }
+    if (!req.session.get("quoteId")) {
+      const result = await fetch(
+        "https://cpqserver-e30-cpq1.cloud.sigma-systems.com/api/quotes",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: user.firstName,
+            customerRef: "100037",
+            items: [],
+          }),
+        }
+      );
+      const newQuote = await result.json();
+      console.log(newQuote);
+      req.session.set("quoteId", newQuote.id);
+    }
+
     req.session.set("userId", user._id);
+
     await req.session.save();
 
     const { _doc } = user;
     const { password, ...userInfo } = _doc;
     res.status(200).json({ isLoggedIn: true, userInfo });
   } catch (error) {
+    console.log(error);
     res
       .status(500)
       .json({ error: { field: "server", message: error.message } });

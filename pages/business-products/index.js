@@ -1,6 +1,7 @@
 import Header from "../../components/Header";
 import fetch from "node-fetch";
 import {
+  BUSINESS_SUB_CATEGORIES,
   DARK_GOLD,
   MOBILE_PRODUCTS_ENDPOINT,
   RESIDENTIAL_SUB_CATEGORIES,
@@ -14,7 +15,7 @@ import CategorySelection from "../../components/CategorySelection";
 import Footer from "../../components/Footer";
 import { Heading } from "@chakra-ui/layout";
 
-export default function residentialProducts({ username, homePageEntry }) {
+export default function businessProducts({ username, homePageEntry }) {
   const { firstSection, secondSection, thirdSection, fourthSection } =
     homePageEntry.fields;
   const homePageImageSections = [
@@ -29,7 +30,7 @@ export default function residentialProducts({ username, homePageEntry }) {
       alt: fourthSection.fields.title,
     },
   ];
-  const type = "residential";
+  const type = "business";
 
   return (
     <>
@@ -43,7 +44,7 @@ export default function residentialProducts({ username, homePageEntry }) {
       >
         {type} Products
       </Heading>
-      <CategorySelection categories={RESIDENTIAL_SUB_CATEGORIES} type={type} />
+      <CategorySelection categories={BUSINESS_SUB_CATEGORIES} type={type} />
       <Hero homePageImageSections={homePageImageSections} />
       <Footer />
     </>

@@ -3,12 +3,12 @@ import Navigation from "./Navigation";
 import { HANSEN_RED, HOME_PAGE_ID } from "../utils/constants";
 import { useMediaQuery } from "@chakra-ui/media-query";
 import { isServer } from "../utils/isServer";
-import { Img } from "@chakra-ui/react";
+import { Image } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useEffect, useState } from "react";
 import { getHomePageImageSections } from "../utils/contentful";
 
-const Header = ({ username }) => {
+const Header = ({ username, initialLogoSrc }) => {
   const [isLargerThan800] = useMediaQuery("(min-width:800px)");
   const [isLargerThan1024] = useMediaQuery("(min-width:1024px)");
   const [logoURL, setLogoURL] = useState("");
@@ -28,7 +28,7 @@ const Header = ({ username }) => {
       borderBottom={`${HANSEN_RED} 2px solid`}
     >
       <NextLink href="/">
-        <Img
+        <Image
           src={logoURL}
           width={isLargerThan800 || isServer() ? "300" : "200"}
           height={isLargerThan800 || isServer() ? "150" : "100"}

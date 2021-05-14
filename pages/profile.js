@@ -2,9 +2,15 @@ import Header from "../components/Header";
 import withSession from "../middleware/session";
 import { dbConnect } from "../middleware/db";
 import User from "../models/user";
+import Footer from "../components/Footer";
 
 export default function profilePage({ username }) {
-  return <Header username={username} />;
+  return (
+    <>
+      <Header username={username} />
+      <Footer />
+    </>
+  );
 }
 
 export const getServerSideProps = withSession(async function ({ req, res }) {

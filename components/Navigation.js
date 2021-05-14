@@ -27,7 +27,7 @@ const Navigation = ({ isLargerThan1024, username }) => {
           p={4}
           color="black"
         >
-          <NextLink href="#" passHref>
+          <NextLink href="/business-products" passHref>
             <Link px={4} fontSize="xl">
               For Business
             </Link>
