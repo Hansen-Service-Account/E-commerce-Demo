@@ -13,9 +13,6 @@ const renderEntities = ({ entity, metaType, product }) => {
       <ChildEntity
         key={e.ID}
         entity={e}
-        type={
-          metaType[e.EntityID].pattern === "Component" ? "Component" : "Charge"
-        }
         metaType={metaType}
         product={
           product

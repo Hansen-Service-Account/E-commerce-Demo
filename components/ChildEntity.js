@@ -3,7 +3,7 @@ import { Box, ListItem, List, Badge, Text } from "@chakra-ui/layout";
 import renderEntities from "../utils/renderEntities";
 import SelectInput from "./SelectInput";
 
-const ChildEntity = ({ entity, metaType, product, type }) => {
+const ChildEntity = ({ entity, metaType, product }) => {
   const renderSelectInput = (product) => {
     if (!product) return null;
     const inputs = [];

@@ -5,6 +5,8 @@ import { IconButton } from "@chakra-ui/button";
 import { CloseIcon } from "@chakra-ui/icons";
 
 const CartItem = ({ item, deleteItem }) => {
+  const { ItemisedPricingSummary } = item.currentPricing.Pricing;
+  const { metaTypeLookup } = item;
   return (
     <Flex direction="column">
       <NextLink href={`/quote/items/${item.id}`}>
@@ -13,11 +15,32 @@ const CartItem = ({ item, deleteItem }) => {
         </Heading>
       </NextLink>
       <List>
-        {item.currentPricing.Pricing.ItemisedPricingSummary.map((p) => (
-          <ListItem key={p.EntityID}>{`${
-            item.metaTypeLookup[p.EntityID].name
-          }:${p.NonRecurring?.ItemCharge}`}</ListItem>
-        ))}
+        {ItemisedPricingSummary.map((p) => {
+          if (p.NonRecurring)
+            return (
+              <ListItem key={p.EntityID}>
+                {p.NonRecurring.ItemCharge
+                  ? `${metaTypeLookup[p.EntityID].name}:${
+                      p.NonRecurring && p.NonRecurring.ItemCharge
+                    }`
+                  : ""}
+              </ListItem>
+            );
+        })}
+      </List>
+      <List>
+        {ItemisedPricingSummary.map((p) => {
+          if (p.Recurring)
+            return (
+              <ListItem key={p.EntityID}>
+                {p.Recurring.Monthly.ItemCharge
+                  ? `${metaTypeLookup[p.EntityID].name}:${
+                      p.Recurring.Monthly.ItemCharge
+                    }`
+                  : ""}
+              </ListItem>
+            );
+        })}
       </List>
       <Flex>
         <IconButton

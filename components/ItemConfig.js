@@ -1,14 +1,4 @@
-import {
-  Accordion,
-  AccordionButton,
-  AccordionItem,
-  AccordionPanel,
-} from "@chakra-ui/accordion";
-import { Checkbox } from "@chakra-ui/checkbox";
 import { Box, Heading, List, Text } from "@chakra-ui/layout";
-import { useState } from "react";
-import ConfigList from "./ConfigList";
-import ChildEntity from "./ChildEntity";
 import renderEntities from "../utils/renderEntities";
 import SelectInput from "./SelectInput";
 
@@ -19,16 +9,26 @@ const ItemConfig = ({ item, metaType }) => {
   console.log(item);
   console.log(productComponents);
 
+  const {
+    offerSpecification: {
+      name,
+      description,
+      productToProduct: subConfigurations,
+    },
+    prePricedCandidate: { ChildEntity: subProducts },
+    metaTypeLookup,
+  } = item;
+
   return (
     <>
       <Box w="80%" mx="auto">
-        <Heading as="h3">{item.offerSpecification.name}</Heading>
-        <Text as="p">{item.offerSpecification.description}</Text>
-        {item.prePricedCandidate.ChildEntity.map((c, index) => (
+        <Heading as="h3">{name}</Heading>
+        <Text as="p">{description}</Text>
+        {subProducts.map((c, index) => (
           <Box key={c.ID}>
             {c.Rate ? (
               <Heading as="h4" size="sm">
-                {item.metaTypeLookup[c.EntityID].name}:
+                {metaTypeLookup[c.EntityID].name}:
                 {c.Rate.Type === "NR_Cost_Based_Rate" || "NC_Cost_Based_Rate"
                   ? `${c.Rate.Value} Non Recurring`
                   : `${c.Rate.Value} Recurring`}
@@ -38,19 +38,19 @@ const ItemConfig = ({ item, metaType }) => {
                 {item.metaTypeLookup[c.EntityID].name}
               </Heading>
             )}
-            {item.offerSpecification.productToProduct[index]
-              ? item.offerSpecification.productToProduct[
-                  index
-                ].product.commercialSpecCharUse?.map((char) => {
-                  return (
-                    <SelectInput
-                      options={char.characteristic.characteristicCharValue}
-                      key={char.id}
-                      id={char.id}
-                      label={char.description}
-                    />
-                  );
-                })
+            {subConfigurations[index]
+              ? subConfigurations[index].product.commercialSpecCharUse?.map(
+                  (char) => {
+                    return (
+                      <SelectInput
+                        options={char.characteristic.characteristicCharValue}
+                        key={char.id}
+                        id={char.id}
+                        label={char.description}
+                      />
+                    );
+                  }
+                )
               : null}
 
             {/* <List>
@@ -82,9 +82,7 @@ const ItemConfig = ({ item, metaType }) => {
           {renderEntities({
             entity: productComponents[0].ChildEntity,
             metaType,
-            product:
-              item.offerSpecification.productToProduct[0].product
-                .productToProduct,
+            product: subConfigurations[0].product.productToProduct,
           })}
         </List>
       </Box>
