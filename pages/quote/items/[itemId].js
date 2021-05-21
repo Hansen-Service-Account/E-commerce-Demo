@@ -3,6 +3,7 @@ import React from "react";
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header";
 import ItemConfig from "../../../components/ItemConfig";
+import QuoteCart from "../../../components/QuoteCart";
 import useItem from "../../../hooks/useItem";
 import { dbConnect } from "../../../middleware/db";
 import withSession from "../../../middleware/session";
@@ -16,8 +17,13 @@ export default function itemId({ quoteId, itemId, username }) {
       {isLoading ? (
         <Spinner />
       ) : (
-        <ItemConfig item={item} metaType={{ ...item.metaTypeLookup }} />
+        <ItemConfig
+          item={item}
+          metaType={{ ...item.metaTypeLookup }}
+          quoteId={quoteId}
+        />
       )}
+      <QuoteCart quoteId={quoteId} />
       <Footer />
     </>
   );
