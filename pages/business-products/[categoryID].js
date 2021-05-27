@@ -8,7 +8,7 @@ import withSession from "../../middleware/session";
 import { dbConnect } from "../../middleware/db";
 import User from "../../models/user";
 import { useState } from "react";
-import { Badge, Flex, Heading } from "@chakra-ui/layout";
+import { Badge, Center, Flex, Heading } from "@chakra-ui/layout";
 import Footer from "../../components/Footer";
 import ViewControl from "../../components/ViewControl";
 import CategorySelection from "../../components/CategorySelection";
@@ -31,7 +31,10 @@ export default function businessCategoryID({
     return (
       <>
         <Header username={username} />
-        <Error statusCode={status} title={errorMessage} />
+        <Center height="70vh" overflow="hidden">
+          <Error statusCode={status} title="Resource not found" />
+        </Center>
+        <QuoteCart quoteId={quoteId} />
       </>
     );
   }
@@ -120,15 +123,17 @@ export const getServerSideProps = withSession(async function ({
   const endPoint = `https://cpqserver-e30-cpq1.cloud.sigma-systems.com/api/offers?InstanceTypeNames=Package,Promotion,Bundle&Classifications=[Customer_Demo_Portal;${params.categoryID};false]&ClassificationElementName=Customer_Demo_Portal&xsltCode=offer_special&at[p1]=ID&el[p2]=Name&at[p3]=BusinessID&el[p4]=Description&el[p5]=Element_Guid&el[p6]=Description`;
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
+  const quoteId = req.session.get("quoteId");
   if (!user) {
     return {
       props: { products },
     };
   }
+
   try {
     const result = await fetcher(endPoint);
     const products = result[0];
-    const quoteId = req.session.get("quoteId");
+
     //   const products = JSON.parse(result.data);
 
     return {
@@ -143,6 +148,8 @@ export const getServerSideProps = withSession(async function ({
       props: {
         status: error.response.status,
         errorMessage: error.data.responseText,
+        username: user.firstName,
+        quoteId,
       },
     };
   }

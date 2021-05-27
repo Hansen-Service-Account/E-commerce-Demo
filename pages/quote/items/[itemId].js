@@ -18,10 +18,13 @@ export default function itemId({ quoteId, itemId, username }) {
     return (
       <>
         <Header username={username} />
-        <Error
-          statusCode={isError.response.status}
-          title={isError.data.responseText}
-        />
+        <Center height="70vh" overflow="hidden">
+          <Error
+            statusCode={isError.response.status}
+            title={isError.data.responseText}
+          />
+        </Center>
+        <QuoteCart quoteId={quoteId} />
       </>
     );
   }

@@ -11,7 +11,7 @@ import { dbConnect } from "../../middleware/db";
 import User from "../../models/user";
 import ProductsDisplay from "../../components/ProductsDisplay";
 import { useState } from "react";
-import { Badge, Flex, Heading } from "@chakra-ui/layout";
+import { Badge, Center, Flex, Heading } from "@chakra-ui/layout";
 import Footer from "../../components/Footer";
 import ViewControl from "../../components/ViewControl";
 import CategorySelection from "../../components/CategorySelection";
@@ -33,7 +33,10 @@ export default function residentialCategoryID({
     return (
       <>
         <Header username={username} />
-        <Error statusCode={status} title={errorMessage} />
+        <Center height="70vh" overflow="hidden">
+          <Error statusCode={status} title="Resource not found" />
+        </Center>
+        <QuoteCart quoteId={quoteId} />
       </>
     );
   }
@@ -130,10 +133,11 @@ export const getServerSideProps = withSession(async function ({
       props: { products },
     };
   }
+  const quoteId = req.session.get("quoteId");
   try {
     const result = await fetcher(endPoint);
     const products = result[0];
-    const quoteId = req.session.get("quoteId");
+
     //   const products = JSON.parse(result.data);
 
     return {
@@ -148,6 +152,8 @@ export const getServerSideProps = withSession(async function ({
       props: {
         status: error.response.status,
         errorMessage: error.data.responseText,
+        username: user.firstName,
+        quoteId,
       },
     };
   }
