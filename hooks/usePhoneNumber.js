@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { HANSEN_CPQ_BASE_URL } from "../utils/constants";
-import fetcher from "../utils/fetcher";
+import fetcher from "../utils/fetchJson";
 
 const usePhoneNumber = (quoteId) => {
   const { data, error, mutate } = useSWR(

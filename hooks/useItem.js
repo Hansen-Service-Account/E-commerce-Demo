@@ -1,9 +1,10 @@
 import useSWR from "swr";
-import fetcher from "../utils/fetcher";
+import { HANSEN_CPQ_BASE_URL } from "../utils/constants";
+import fetcher from "../utils/fetchJson";
 
 const useItem = (quoteId, itemId) => {
   const { data, error, mutate } = useSWR(
-    `/api/quotes/${quoteId}/items/${itemId}?include=pricing,quotePricing,specification,candidate,validation,quote`,
+    `${HANSEN_CPQ_BASE_URL}/quotes/${quoteId}/items/${itemId}?include=pricing,quotePricing,specification,candidate,validation`,
     fetcher
   );
   return {

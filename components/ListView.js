@@ -57,7 +57,6 @@ const ListView = ({
               leftIcon={<InfoIcon />}
               onClick={() => {
                 setCurrentProduct({ ...product });
-                console.log(product);
                 controls.onOpen();
               }}
             >

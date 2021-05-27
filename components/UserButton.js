@@ -25,6 +25,7 @@ export default function UserButton({ isLargerThan1024, username }) {
             bg="#e32525"
             color="white"
             textTransform="uppercase"
+            fontSize={{ base: "10px", sm: "16px" }}
             as={Button}
             rightIcon={<ChevronDownIcon />}
             _hover={{ bg: "black" }}

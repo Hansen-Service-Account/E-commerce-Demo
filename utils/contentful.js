@@ -11,5 +11,6 @@ export const getHomePageImageSections = async () => {
     return homePageEntry;
   } catch (err) {
     console.log(err.message);
+    throw err;
   }
 };

@@ -13,8 +13,13 @@ import Hero from "../../components/Hero";
 import CategorySelection from "../../components/CategorySelection";
 import Footer from "../../components/Footer";
 import { Heading } from "@chakra-ui/layout";
+import QuoteCart from "../../components/QuoteCart";
 
-export default function residentialProducts({ username, homePageEntry }) {
+export default function residentialProducts({
+  username,
+  homePageEntry,
+  quoteId,
+}) {
   const { firstSection, secondSection, thirdSection, fourthSection } =
     homePageEntry.fields;
   const homePageImageSections = [
@@ -45,6 +50,7 @@ export default function residentialProducts({ username, homePageEntry }) {
       </Heading>
       <CategorySelection categories={RESIDENTIAL_SUB_CATEGORIES} type={type} />
       <Hero homePageImageSections={homePageImageSections} />
+      <QuoteCart quoteId={quoteId} />
       <Footer />
     </>
   );
@@ -54,6 +60,7 @@ export const getServerSideProps = withSession(async function ({ req, res }) {
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const homePageEntry = await getHomePageImageSections();
+  const quoteId = req.session.get("quoteId");
 
   if (!user) {
     return {
@@ -65,6 +72,7 @@ export const getServerSideProps = withSession(async function ({ req, res }) {
     props: {
       homePageEntry,
       username: user.firstName,
+      quoteId,
     },
   };
 });

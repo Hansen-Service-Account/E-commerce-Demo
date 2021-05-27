@@ -1,5 +1,6 @@
+import { Box, Center, Flex, Heading } from "@chakra-ui/layout";
 import { Spinner } from "@chakra-ui/spinner";
-import React from "react";
+import React, { useState } from "react";
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header";
 import ItemConfig from "../../../components/ItemConfig";
@@ -8,22 +9,49 @@ import useItem from "../../../hooks/useItem";
 import { dbConnect } from "../../../middleware/db";
 import withSession from "../../../middleware/session";
 import User from "../../../models/user";
+import Error from "next/error";
 
 export default function itemId({ quoteId, itemId, username }) {
   const { item, isLoading, isError } = useItem(quoteId, itemId);
+  const [adding, setAdding] = useState(false);
+  if (isError) {
+    return (
+      <>
+        <Header username={username} />
+        <Error
+          statusCode={isError.response.status}
+          title={isError.data.responseText}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <Header username={username} />
       {isLoading ? (
-        <Spinner />
+        <Flex h="70vh" justify="center" align="center" direction="column">
+          <Spinner
+            thickness="4px"
+            speed="0.65s"
+            emptyColor="gray.200"
+            color="blue.500"
+            size="xl"
+          />
+          <Heading as="h5" size="md" my={4}>
+            Loading item details...
+          </Heading>
+        </Flex>
       ) : (
         <ItemConfig
           item={item}
           metaType={{ ...item.metaTypeLookup }}
           quoteId={quoteId}
+          setAdding={setAdding}
+          adding={adding}
         />
       )}
-      <QuoteCart quoteId={quoteId} />
+      <QuoteCart quoteId={quoteId} adding={adding} />
       <Footer />
     </>
   );
@@ -53,6 +81,7 @@ export const getServerSideProps = withSession(async function ({
       quoteId,
       itemId,
       username: user.firstName,
+      key: itemId,
     },
   };
 });

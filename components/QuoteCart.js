@@ -3,7 +3,17 @@ import { useDisclosure } from "@chakra-ui/hooks";
 import Icon from "@chakra-ui/icon";
 import { SpinnerIcon } from "@chakra-ui/icons";
 import { Input } from "@chakra-ui/input";
-import { Badge, Stack, StackDivider, VStack } from "@chakra-ui/layout";
+import {
+  Badge,
+  Box,
+  Center,
+  Divider,
+  Heading,
+  Stack,
+  StackDivider,
+  Text,
+  VStack,
+} from "@chakra-ui/layout";
 import {
   Drawer,
   DrawerBody,
@@ -14,17 +24,20 @@ import {
   DrawerOverlay,
 } from "@chakra-ui/modal";
 import { Spinner } from "@chakra-ui/spinner";
-import fetch from "node-fetch";
 import React from "react";
 import { FaShoppingCart } from "react-icons/fa";
 import useQuote from "../hooks/useQuote";
+import { DARK_GOLD, HANSEN_CPQ_BASE_URL } from "../utils/constants";
 import CartItem from "./CartItem";
+import { useRouter } from "next/router";
+import fetch from "../utils/fetchJson";
 
 const QuoteCart = ({ quoteId, adding }) => {
   if (!quoteId) {
     return null;
   }
   const { quote, mutateQuote, isLoading, isError } = useQuote(quoteId);
+  const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cartBtnRef = React.useRef();
   const deleteItem = async (itemId) => {
@@ -35,14 +48,19 @@ const QuoteCart = ({ quoteId, adding }) => {
       },
       false
     );
-    await fetch(`/api/quotes/${quoteId}/items/${itemId}`, { method: "DELETE" });
+    await fetch(
+      `${HANSEN_CPQ_BASE_URL}/api/quotes/${quoteId}/items/${itemId}`,
+      { method: "DELETE" }
+    );
     mutateQuote();
   };
   return (
     <>
       <Button
         ref={cartBtnRef}
-        leftIcon={adding ? <Spinner /> : <Icon as={FaShoppingCart} />}
+        leftIcon={
+          adding || isLoading ? <Spinner /> : <Icon as={FaShoppingCart} />
+        }
         colorScheme="teal"
         onClick={onOpen}
         position="fixed"
@@ -50,9 +68,10 @@ const QuoteCart = ({ quoteId, adding }) => {
         px={{ base: 2, lg: 4 }}
         left={8}
         bottom={8}
-        disabled={adding}
+        disabled={adding || isLoading || isError}
       >
-        {quote ? (
+        {isError && "Error Retrieving Cart"}
+        {quote && !isError ? (
           <Badge
             variant="solid"
             colorScheme="red"
@@ -73,11 +92,22 @@ const QuoteCart = ({ quoteId, adding }) => {
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader>Quote Cart</DrawerHeader>
+          {quote && quote.currentValidation.valid === false && (
+            <DrawerHeader fontSize="16px" color="red">
+              Please configure all invalid items before submitting for orders.
+            </DrawerHeader>
+          )}
+          {quote && quote.items.length === 0 && (
+            <DrawerHeader fontSize="16px" color="black">
+              Your cart is currently empty.
+            </DrawerHeader>
+          )}
           <DrawerBody>
             <VStack
               spacing={4}
               align="stretch"
               divider={<StackDivider borderColor="gray.200" />}
+              py={4}
             >
               {quote
                 ? quote.items.map((i) => (
@@ -85,10 +115,47 @@ const QuoteCart = ({ quoteId, adding }) => {
                       key={i.itemNumber}
                       item={i}
                       deleteItem={deleteItem}
+                      onClose={onClose}
                     />
                   ))
                 : null}
             </VStack>
+            {quote && quote.items.length !== 0 && (
+              <>
+                <DrawerHeader px={0}>Pricing Summary</DrawerHeader>
+                <Text py={2}>
+                  Upfront charge: $
+                  {(quote &&
+                    quote.pricingSummary &&
+                    quote.pricingSummary.TotalPriceSummary.NonRecurring &&
+                    quote.pricingSummary.TotalPriceSummary.NonRecurring
+                      .ItemCharge) ||
+                    "0"}
+                </Text>
+                <Divider borderColor={DARK_GOLD} />
+                <Text py={2}>
+                  Monthly charge: $
+                  {(quote &&
+                    quote.pricingSummary &&
+                    quote.pricingSummary.TotalPriceSummary.Recurring.Monthly &&
+                    quote.pricingSummary.TotalPriceSummary.Recurring.Monthly
+                      .ItemCharge) ||
+                    "0"}
+                </Text>
+              </>
+            )}
+            {quote &&
+              quote.items.length !== 0 &&
+              quote.currentValidation.valid === true && (
+                <Box textAlign="center" py={4}>
+                  <Button
+                    colorScheme="green"
+                    onClick={() => router.push("/quote")}
+                  >
+                    Summary
+                  </Button>
+                </Box>
+              )}
           </DrawerBody>
           <DrawerFooter>
             <Button variant="outline" mr={3} onClick={onClose}>

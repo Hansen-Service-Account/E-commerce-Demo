@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { CONTENTFUL_BASE_URL } from "../utils/constants";
-import fetcher from "../utils/fetcher";
+import fetcher from "../utils/fetcJson";
 
 const usePageEntry = (entryId) => {
   const { data, error } = useSWR(

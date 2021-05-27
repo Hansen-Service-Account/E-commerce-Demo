@@ -31,7 +31,6 @@ export default function LoginForm() {
             body: JSON.stringify(values),
           });
           if (data.error) {
-            console.log(data.error);
             const errorMap = {};
             errorMap[data.error.field] = data.error.message;
             setErrors(errorMap);

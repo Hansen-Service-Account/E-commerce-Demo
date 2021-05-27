@@ -15,6 +15,8 @@ const SelectInput = ({
   name,
   required,
   submittedError,
+  readOnly,
+  defaultValue,
 }) => {
   const [touched, setTouched] = useState(false);
   return (
@@ -23,7 +25,8 @@ const SelectInput = ({
       name={id}
       my={2}
       isRequired={required}
-      isInvalid={!value && (submittedError || touched) && required}
+      isInvalid={!value && (submittedError || touched) && required && !readOnly}
+      isDisabled={readOnly}
     >
       <FormLabel fontWeight="400">{label}</FormLabel>
       <Select
@@ -36,7 +39,11 @@ const SelectInput = ({
         onClick={() => setTouched(true)}
         name={name}
       >
-        <option value="">-- Make a selection --</option>
+        {!options && (
+          <option value={defaultValue || ""}>
+            {defaultValue || "-- Make a selection --"}
+          </option>
+        )}
         {options.map((opt) => (
           <option key={opt.value || opt.name} value={opt.id} id={opt.id}>
             {opt.value || opt.name}
