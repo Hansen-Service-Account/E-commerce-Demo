@@ -19,6 +19,7 @@ import fetcher from "../../utils/nodeFetchJson";
 import ProductsDisplay from "../../components/ProductsDisplay";
 import Error from "next/error";
 import ErrorToast from "../../components/ErrorToast";
+import { Alert, AlertIcon } from "@chakra-ui/alert";
 
 export default function businessCategoryID({
   username,
@@ -26,15 +27,18 @@ export default function businessCategoryID({
   quoteId,
   status,
   errorMessage,
+  categories,
+  customerType,
 }) {
   if (status) {
     return (
       <>
         <Header username={username} />
         <Center height="70vh" overflow="hidden">
-          <Error statusCode={status} title="Resource not found" />
+          <Error statusCode={status} title={errorMessage} />
         </Center>
         <QuoteCart quoteId={quoteId} />
+        <Footer />
       </>
     );
   }
@@ -43,6 +47,7 @@ export default function businessCategoryID({
   const [viewMode, setViewMode] = useState("cardview");
   const { quote, mutateQuote } = useQuote(quoteId);
   const [adding, setAdding] = useState(false);
+
   const addToCart = async (productId) => {
     try {
       mutateQuote(
@@ -91,7 +96,16 @@ export default function businessCategoryID({
   return (
     <>
       <Header username={username} />
-      <CategorySelection type="business" categories={BUSINESS_SUB_CATEGORIES} />
+      <CategorySelection
+        type={categories.name}
+        categories={categories.children}
+      />
+      {customerType !== "Business" && (
+        <Alert status="warning" w="80%" mx="auto" mt={8}>
+          <AlertIcon />
+          You must be a business type customer to purchase these products.
+        </Alert>
+      )}
       <Flex justifyContent="space-between" w="80%" mx="auto" mt={8}>
         <Flex justifyContent="center" alignItems="center">
           <Heading as="h2" size="xl" textAlign="center" color="#b39573" mx={2}>
@@ -108,6 +122,7 @@ export default function businessCategoryID({
         viewMode={viewMode}
         isLoggedIn={isLoggedIn}
         addToCart={addToCart}
+        allowAdd={customerType === "Business"}
       />
       <QuoteCart quoteId={quoteId} adding={adding} />
       <Footer />
@@ -124,23 +139,30 @@ export const getServerSideProps = withSession(async function ({
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
-  if (!user) {
-    return {
-      props: { products },
-    };
-  }
-
   try {
     const result = await fetcher(endPoint);
     const products = result[0];
-
-    //   const products = JSON.parse(result.data);
+    const classificationresult = await fetcher(
+      `${HANSEN_CPQ_BASE_URL}/classifications/CDP`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    const categories = classificationresult.find((r) => r.name === "Business");
+    if (!user) {
+      return {
+        props: { products, categories },
+      };
+    }
 
     return {
       props: {
         products,
         username: user.firstName,
         quoteId,
+        categories,
+        customerType: user.customerType,
       },
     };
   } catch (error) {

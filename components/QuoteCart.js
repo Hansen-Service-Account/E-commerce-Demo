@@ -31,12 +31,26 @@ import { DARK_GOLD, HANSEN_CPQ_BASE_URL } from "../utils/constants";
 import CartItem from "./CartItem";
 import { useRouter } from "next/router";
 import fetch from "../utils/fetchJson";
+import { useToast } from "@chakra-ui/toast";
+import ErrorToast from "./ErrorToast";
 
 const QuoteCart = ({ quoteId, adding }) => {
   if (!quoteId) {
     return null;
   }
+  console.log(quoteId);
+  const toast = useToast();
   const { quote, mutateQuote, isLoading, isError } = useQuote(quoteId);
+  if (isError) {
+    toast({
+      render: ({ id, onClose }) => (
+        <ErrorToast error={isError} onClose={onClose} />
+      ),
+      duration: 5000,
+      isClosable: true,
+      position: "top",
+    });
+  }
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cartBtnRef = React.useRef();
@@ -92,11 +106,13 @@ const QuoteCart = ({ quoteId, adding }) => {
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader>Quote Cart</DrawerHeader>
-          {quote && quote.currentValidation.valid === false && (
-            <DrawerHeader fontSize="16px" color="red">
-              Please configure all invalid items before submitting for orders.
-            </DrawerHeader>
-          )}
+          {quote &&
+            quote.currentValidation &&
+            quote.currentValidation.valid === false && (
+              <DrawerHeader fontSize="16px" color="red">
+                Please configure all invalid items before submitting for orders.
+              </DrawerHeader>
+            )}
           {quote && quote.items.length === 0 && (
             <DrawerHeader fontSize="16px" color="black">
               Your cart is currently empty.
@@ -146,6 +162,7 @@ const QuoteCart = ({ quoteId, adding }) => {
             )}
             {quote &&
               quote.items.length !== 0 &&
+              quote.currentValidation &&
               quote.currentValidation.valid === true && (
                 <Box textAlign="center" py={4}>
                   <Button

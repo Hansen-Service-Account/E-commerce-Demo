@@ -2,7 +2,7 @@ import withSession from "../../middleware/session";
 import User from "../../models/user";
 
 export default withSession(async (req, res) => {
-  const userId = req.session.userId;
+  const userId = req.session.get("userId");
 
   if (userId) {
     const user = await User.findOne({ _id: userId });

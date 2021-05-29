@@ -18,8 +18,16 @@ const CategorySelection = ({ type, categories }) => {
         borderRadius="4px"
       >
         {categories.map((c) => (
-          <WrapItem key={c.id}>
-            <NextLink href={`/${type}-products/${c.id}`}>
+          <WrapItem key={c.guid}>
+            <NextLink
+              href={`/${
+                type === "Business"
+                  ? "business"
+                  : type === "Consumer"
+                  ? "residential"
+                  : "other"
+              }-products/${c.guid}`}
+            >
               <Link
                 px={4}
                 py={2}
@@ -27,7 +35,7 @@ const CategorySelection = ({ type, categories }) => {
                 borderRadius="4px"
                 textAlign="center"
                 _hover={{
-                  bg: type === "residential" ? "teal" : "tomato",
+                  bg: type === "Consumer" ? "teal" : "tomato",
                   color: "white",
                 }}
               >

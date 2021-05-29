@@ -37,7 +37,7 @@ const Navigation = ({ isLargerThan1024, username }) => {
               For Home
             </Link>
           </NextLink>
-          <NextLink href="#" passHref>
+          <NextLink href="/contact" passHref>
             <Link px={4} fontSize="xl">
               Contact
             </Link>

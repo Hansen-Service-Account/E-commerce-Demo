@@ -25,6 +25,7 @@ export default function itemId({ quoteId, itemId, username }) {
           />
         </Center>
         <QuoteCart quoteId={quoteId} />
+        <Footer />
       </>
     );
   }

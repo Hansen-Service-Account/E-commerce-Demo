@@ -4,7 +4,7 @@ import {
   AlertIcon,
   AlertTitle,
 } from "@chakra-ui/alert";
-import { Box, StackDivider, VStack } from "@chakra-ui/layout";
+import { Box, VStack } from "@chakra-ui/layout";
 import React from "react";
 
 export default function ErrorPrompt({ errors, metaTypeLookup }) {

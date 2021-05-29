@@ -6,7 +6,7 @@ export default function ErrorToast({ error, onClose }) {
   return (
     <Flex
       color="white"
-      p={3}
+      p={4}
       bg="red"
       justify="space-between"
       align="center"
@@ -18,7 +18,8 @@ export default function ErrorToast({ error, onClose }) {
         <Heading
           as="h5"
           fontSize="16px"
-        >{`Review error: ${error.data.responseCode}, status ${error.data.httpStatus}`}</Heading>
+          mx={4}
+        >{`Request error: ${error.data.responseCode}, status ${error.data.httpStatus}`}</Heading>
         <CloseIcon
           w={3}
           h={3}

@@ -37,7 +37,10 @@ export default function UserButton({ isLargerThan1024, username }) {
             <NextLink href="/profile">
               <MenuItem>Profile</MenuItem>
             </NextLink>
-            <MenuItem>Orders</MenuItem>
+            <NextLink href="/orders">
+              <MenuItem>Orders</MenuItem>
+            </NextLink>
+
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </MenuList>
         </Menu>

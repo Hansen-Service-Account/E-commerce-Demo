@@ -31,12 +31,17 @@ import useQuote from "../../hooks/useQuote";
 import { dbConnect } from "../../middleware/db";
 import withSession from "../../middleware/session";
 import User from "../../models/user";
-import { DARK_GOLD } from "../../utils/constants";
+import { DARK_GOLD, HANSEN_CPQ_BASE_URL } from "../../utils/constants";
 import { useRouter } from "next/router";
 import { Button } from "@chakra-ui/button";
+import useRecurringCharge from "../../hooks/useRecurringCharge";
+import QuoteSummary from "../../components/QuoteSummary";
+import PricingSummary from "../../components/PricingSummary";
+import QuoteStatus from "../../components/QuoteStatus";
 
 export default function Quote({ username, quoteId }) {
   const { quote, mutateQuote, isLoading, isError } = useQuote(quoteId);
+  const recurringCharges = !isLoading && !isError && useRecurringCharge(quote);
   const router = useRouter();
   const deleteItem = async (itemId) => {
     mutateQuote(
@@ -46,7 +51,9 @@ export default function Quote({ username, quoteId }) {
       },
       false
     );
-    await fetch(`/api/quotes/${quoteId}/items/${itemId}`, { method: "DELETE" });
+    await fetch(`${HANSEN_CPQ_BASE_URL}/quotes/${quoteId}/items/${itemId}`, {
+      method: "DELETE",
+    });
     mutateQuote();
   };
   return (
@@ -71,179 +78,14 @@ export default function Quote({ username, quoteId }) {
           <Heading as="h3" py={6}>
             Quote Summary
           </Heading>
-          <Wrap spacing={4} pb={4}>
-            <WrapItem>
-              <Tooltip hasArrow label="Quote Validity" bg={DARK_GOLD}>
-                <Badge
-                  colorScheme={quote.currentValidation.valid ? "green" : "red"}
-                  variant="outline"
-                >
-                  {quote.currentValidation.valid ? "Valid" : "Invalid"}
-                </Badge>
-              </Tooltip>
-            </WrapItem>
-            <WrapItem>
-              <Tooltip hasArrow label="Quote Number" bg={DARK_GOLD}>
-                <Badge colorScheme="telegram">{quote.quoteNumber}</Badge>
-              </Tooltip>
-            </WrapItem>
-
-            <WrapItem>
-              <Tooltip hasArrow label="Create At" bg={DARK_GOLD}>
-                <Badge colorScheme="telegram" variant="subtle">
-                  {new Date(Date.parse(quote.updated)).toUTCString()}
-                </Badge>
-              </Tooltip>
-            </WrapItem>
-          </Wrap>
-          <VStack
-            spacing={8}
-            align="stretch"
-            divider={<StackDivider borderColor="gray.200" />}
-            py={4}
-          >
-            {quote.items.map((item) => (
-              <Box
-                borderRadius={8}
-                key={item.id}
-                borderColor={DARK_GOLD}
-                borderWidth="2px"
-                p={8}
-                position="relative"
-              >
-                <Tooltip
-                  hasArrow
-                  label={
-                    item.currentValidation.valid
-                      ? "Valid item"
-                      : "Invalid items need to be configured or removed before checkout"
-                  }
-                  placement="bottom"
-                  bg={DARK_GOLD}
-                >
-                  <Badge
-                    position="absolute"
-                    top="0"
-                    left="50%"
-                    transform="translate(-50%,-50%)"
-                    variant="outline"
-                    bg="white"
-                    colorScheme={item.currentValidation.valid ? "green" : "red"}
-                  >
-                    {item.currentValidation.valid ? "Valid" : "Invalid"}
-                  </Badge>
-                </Tooltip>
-                <Icon
-                  as={IoIosCloseCircle}
-                  position="absolute"
-                  top="0"
-                  right="0"
-                  w={6}
-                  h={6}
-                  bg="white"
-                  color="red"
-                  _hover={{ color: "black" }}
-                  cursor="pointer"
-                  transform="translate(50%,-50%)"
-                  onClick={() => deleteItem(item.id)}
-                />
-                <Icon
-                  as={IoIosCog}
-                  position="absolute"
-                  bottom="0"
-                  right="0"
-                  w={6}
-                  h={6}
-                  bg="white"
-                  color={DARK_GOLD}
-                  _hover={{ color: "black" }}
-                  cursor="pointer"
-                  transform="translate(50%,50%)"
-                  onClick={() => router.push(`/quote/items/${item.id}`)}
-                />
-                <Table variant="simple" fontSize={{ base: "12px", md: "18px" }}>
-                  <TableCaption
-                    placement="top"
-                    fontWeight="bold"
-                    fontSize="18px"
-                    textAlign="left"
-                    px={0}
-                    color={DARK_GOLD}
-                    mt={0}
-                    mb={4}
-                  >
-                    {item.name}{" "}
-                  </TableCaption>
-                  <Thead fontSize={{ base: "12px", md: "18px" }}>
-                    <Tr borderColor={DARK_GOLD}>
-                      <Th
-                        w={{ base: "auto", md: "50%" }}
-                        fontSize={{ base: "12px", md: "18px" }}
-                        p={{ base: 1, md: 3 }}
-                      >
-                        Name
-                      </Th>
-                      <Th
-                        w="25%"
-                        isNumeric
-                        fontSize={{ base: "12px", md: "18px" }}
-                        p={{ base: 1, md: 3 }}
-                      >
-                        Upfront
-                      </Th>
-                      <Th
-                        w="25%"
-                        isNumeric
-                        fontSize={{ base: "12px", md: "18px" }}
-                        p={{ base: 1, md: 3 }}
-                      >
-                        Recurring(Monthly)
-                      </Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {item.currentPricing.Pricing.ItemisedPricingSummary.map(
-                      (ips) => (
-                        <Tr borderColor={DARK_GOLD} key={ips.EntityID}>
-                          <Td p={{ base: 1, md: 3 }}>
-                            {item.metaTypeLookup[ips.EntityID].name}
-                          </Td>
-                          <Td p={{ base: 1, md: 3 }} isNumeric>
-                            {ips.NonRecurring
-                              ? ips.NonRecurring.ItemCharge
-                              : "N/A"}
-                          </Td>
-                          <Td p={{ base: 1, md: 3 }} isNumeric>
-                            {ips.Recurring
-                              ? ips.Recurring.Monthly.ItemCharge
-                              : "N/A"}
-                          </Td>
-                        </Tr>
-                      )
-                    )}
-                  </Tbody>
-                </Table>
-              </Box>
-            ))}
-          </VStack>
-          <Box fontWeight="bold" my={8}>
-            <Flex justify="space-between" align="center">
-              <Text as="span">Total Charge Upfront</Text>
-              <Text as="span">
-                {quote.pricingSummary.TotalPriceSummary.NonRecurring.ItemCharge}
-              </Text>
-            </Flex>
-            <Divider my={2} borderColor={DARK_GOLD} />
-            <Flex justify="space-between" align="center">
-              <Text as="span">Total Charge Monthly</Text>
-              <Text as="span">
-                {
-                  quote.pricingSummary.TotalPriceSummary.Recurring.Monthly
-                    .ItemCharge
-                }
-              </Text>
-            </Flex>
-          </Box>
+          <QuoteStatus quote={quote} />
+          <QuoteSummary quote={quote} deleteItem={deleteItem} />
+          <PricingSummary
+            nonRecurringCharge={
+              quote.pricingSummary.TotalPriceSummary.NonRecurring.ItemCharge
+            }
+            recurringCharges={recurringCharges}
+          />
           <Flex justify="space-between" align="center" py={4}>
             <Button colorScheme="linkedin" variant="outline">
               Continue shopping
@@ -251,6 +93,7 @@ export default function Quote({ username, quoteId }) {
             <Button
               colorScheme="green"
               display={quote.currentValidation.valid ? "initial" : "none"}
+              onClick={() => router.push("/checkout")}
             >
               Proceed to checkout
             </Button>

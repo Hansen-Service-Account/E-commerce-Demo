@@ -1,11 +1,6 @@
 import Header from "../../components/Header";
 import fetch from "../../utils/fetchJson";
-import {
-  HANSEN_CPQ_BASE_URL,
-  HANSEN_RED,
-  MOBILE_PRODUCTS_ENDPOINT,
-  RESIDENTIAL_SUB_CATEGORIES,
-} from "../../utils/constants";
+import { HANSEN_CPQ_BASE_URL } from "../../utils/constants";
 import withSession from "../../middleware/session";
 import { dbConnect } from "../../middleware/db";
 import User from "../../models/user";
@@ -21,6 +16,7 @@ import { useToast } from "@chakra-ui/toast";
 import fetcher from "../../utils/nodeFetchJson";
 import Error from "next/error";
 import ErrorToast from "../../components/ErrorToast";
+import { Alert, AlertIcon } from "@chakra-ui/alert";
 
 export default function residentialCategoryID({
   username,
@@ -28,15 +24,18 @@ export default function residentialCategoryID({
   quoteId,
   status,
   errorMessage,
+  categories,
+  customerType,
 }) {
   if (status) {
     return (
       <>
         <Header username={username} />
         <Center height="70vh" overflow="hidden">
-          <Error statusCode={status} title="Resource not found" />
+          <Error statusCode={status} title={errorMessage} />
         </Center>
         <QuoteCart quoteId={quoteId} />
+        <Footer />
       </>
     );
   }
@@ -94,9 +93,15 @@ export default function residentialCategoryID({
     <>
       <Header username={username} />
       <CategorySelection
-        type="residential"
-        categories={RESIDENTIAL_SUB_CATEGORIES}
+        type={categories.name}
+        categories={categories.children}
       />
+      {customerType !== "Residential" && (
+        <Alert status="warning" w="80%" mx="auto" mt={8}>
+          <AlertIcon />
+          You must be a residential type customer to purchase these products.
+        </Alert>
+      )}
       <Flex justifyContent="space-between" w="80%" mx="auto" mt={8}>
         <Flex justifyContent="center" alignItems="center">
           <Heading as="h2" size="xl" textAlign="center" color="#b39573" mx={2}>
@@ -113,6 +118,7 @@ export default function residentialCategoryID({
         viewMode={viewMode}
         isLoggedIn={isLoggedIn}
         addToCart={addToCart}
+        allowAdd={customerType === "Residential"}
       />
       <QuoteCart quoteId={quoteId} adding={adding} />
       <Footer />
@@ -120,31 +126,31 @@ export default function residentialCategoryID({
   );
 }
 
-export const getServerSideProps = withSession(async function ({
-  req,
-  res,
-  params,
-}) {
+export const getServerSideProps = withSession(async function ({ req, params }) {
   const endPoint = `https://cpqserver-e30-cpq1.cloud.sigma-systems.com/api/offers?InstanceTypeNames=Package,Promotion,Bundle&Classifications=[Customer_Demo_Portal;${params.categoryID};false]&ClassificationElementName=Customer_Demo_Portal&xsltCode=offer_special&at[p1]=ID&el[p2]=Name&at[p3]=BusinessID&el[p4]=Description&el[p5]=Element_Guid&el[p6]=Description`;
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
-  if (!user) {
-    return {
-      props: { products },
-    };
-  }
-  const quoteId = req.session.get("quoteId");
   try {
+    const classificationresult = await fetcher(
+      `${HANSEN_CPQ_BASE_URL}/classifications/CDP`
+    );
+    const categories = classificationresult.find((r) => r.name === "Consumer");
+    if (!user) {
+      return {
+        props: { products, categories },
+      };
+    }
+    const quoteId = req.session.get("quoteId");
     const result = await fetcher(endPoint);
     const products = result[0];
-
-    //   const products = JSON.parse(result.data);
 
     return {
       props: {
         products,
         username: user.firstName,
         quoteId,
+        categories,
+        customerType: user.customerType,
       },
     };
   } catch (error) {

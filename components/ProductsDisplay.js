@@ -5,7 +5,13 @@ import CardView from "./CardView";
 import ProductDetail from "./ProductDetail";
 import { useState } from "react";
 
-const ProductsDisplay = ({ products, viewMode, isLoggedIn, addToCart }) => {
+const ProductsDisplay = ({
+  products,
+  viewMode,
+  isLoggedIn,
+  addToCart,
+  allowAdd,
+}) => {
   const controls = useDisclosure();
   const [currentProduct, setCurrentProduct] = useState();
   return (
@@ -20,6 +26,7 @@ const ProductsDisplay = ({ products, viewMode, isLoggedIn, addToCart }) => {
               controls={controls}
               setCurrentProduct={setCurrentProduct}
               addToCart={addToCart}
+              allowAdd={allowAdd}
             />
           ) : (
             <CardView
@@ -29,6 +36,7 @@ const ProductsDisplay = ({ products, viewMode, isLoggedIn, addToCart }) => {
               controls={controls}
               setCurrentProduct={setCurrentProduct}
               addToCart={addToCart}
+              allowAdd={allowAdd}
             />
           )
         )}

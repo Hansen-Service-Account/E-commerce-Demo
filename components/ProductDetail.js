@@ -23,7 +23,10 @@ const ProductDetail = ({ product, controls }) => {
   const { isOpen, onOpen, onClose } = controls;
   let features;
   if (product) {
-    features = product.magentoImages.split(",");
+    if (product.magentoImages) {
+      features = product.magentoImages.split(",");
+    }
+
     return (
       <Modal isOpen={isOpen} onClose={onClose} size="2xl">
         <ModalOverlay />
@@ -57,12 +60,13 @@ const ProductDetail = ({ product, controls }) => {
                 <Heading as="h5" size="md" color="#b39573" pb={2}>
                   Features
                 </Heading>
-                {features.map((f) => (
-                  <Flex key={f} alignItems="center">
-                    <UnlockIcon color="#b39573" mr={4} />
-                    <Text as="span">{f}</Text>
-                  </Flex>
-                ))}
+                {features &&
+                  features.map((f) => (
+                    <Flex key={f} alignItems="center">
+                      <UnlockIcon color="#b39573" mr={4} />
+                      <Text as="span">{f}</Text>
+                    </Flex>
+                  ))}
               </ListItem>
               <ListItem pb={2}>
                 <Heading as="h5" size="md" color="#b39573" pb={2}>

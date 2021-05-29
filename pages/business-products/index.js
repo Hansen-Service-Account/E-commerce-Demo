@@ -3,6 +3,7 @@ import fetch from "node-fetch";
 import {
   BUSINESS_SUB_CATEGORIES,
   DARK_GOLD,
+  HANSEN_CPQ_BASE_URL,
   MOBILE_PRODUCTS_ENDPOINT,
   RESIDENTIAL_SUB_CATEGORIES,
 } from "../../utils/constants";
@@ -13,10 +14,20 @@ import { getHomePageImageSections } from "../../utils/contentful";
 import Hero from "../../components/Hero";
 import CategorySelection from "../../components/CategorySelection";
 import Footer from "../../components/Footer";
-import { Heading } from "@chakra-ui/layout";
+import { Center, Heading } from "@chakra-ui/layout";
 import QuoteCart from "../../components/QuoteCart";
+import fetcher from "../../utils/nodeFetchJson";
+import Error from "next/error";
 
-export default function businessProducts({ username, homePageEntry, quoteId }) {
+export default function businessProducts({
+  username,
+  homePageEntry,
+  quoteId,
+  status,
+  errorMessage,
+  categories,
+  customerType,
+}) {
   const { firstSection, secondSection, thirdSection, fourthSection } =
     homePageEntry.fields;
   const homePageImageSections = [
@@ -31,7 +42,19 @@ export default function businessProducts({ username, homePageEntry, quoteId }) {
       alt: fourthSection.fields.title,
     },
   ];
-  const type = "business";
+
+  if (status) {
+    return (
+      <>
+        <Header username={username} />
+        <Center height="70vh" overflow="hidden">
+          <Error statusCode={status} title={errorMessage} />
+        </Center>
+        <QuoteCart quoteId={quoteId} />
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -43,9 +66,12 @@ export default function businessProducts({ username, homePageEntry, quoteId }) {
         textTransform="uppercase"
         mt={16}
       >
-        {type} Products
+        {categories.name} Products
       </Heading>
-      <CategorySelection categories={BUSINESS_SUB_CATEGORIES} type={type} />
+      <CategorySelection
+        categories={categories.children}
+        type={categories.name}
+      />
       <Hero homePageImageSections={homePageImageSections} />
       <QuoteCart quoteId={quoteId} />
       <Footer />
@@ -53,23 +79,40 @@ export default function businessProducts({ username, homePageEntry, quoteId }) {
   );
 }
 
-export const getServerSideProps = withSession(async function ({ req, res }) {
+export const getServerSideProps = withSession(async function ({ req }) {
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const homePageEntry = await getHomePageImageSections();
   const quoteId = req.session.get("quoteId");
+  try {
+    const result = await fetcher(`${HANSEN_CPQ_BASE_URL}/classifications/CDP`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    const categories = result.find((r) => r.name === "Business");
 
-  if (!user) {
+    if (!user) {
+      return {
+        props: { homePageEntry, categories },
+      };
+    }
+
     return {
-      props: { homePageEntry },
+      props: {
+        homePageEntry,
+        username: user.firstName,
+        quoteId,
+        categories,
+      },
+    };
+  } catch (error) {
+    return {
+      props: {
+        status: error.response.status,
+        errorMessage: error.data.responseText,
+        username: user.firstName,
+        quoteId,
+      },
     };
   }
-
-  return {
-    props: {
-      homePageEntry,
-      username: user.firstName,
-      quoteId,
-    },
-  };
 });

@@ -10,8 +10,9 @@ const CardView = ({
   setCurrentProduct,
   controls,
   addToCart,
+  allowAdd,
 }) => {
-  const features = product.magentoImages.split(",");
+  const features = product.magentoImages && product.magentoImages.split(",");
   return (
     <>
       <Flex
@@ -40,18 +41,19 @@ const CardView = ({
           <Text textAlign="left" my={4}>
             {product.marketingTagLine}
           </Text>
-          {features.map((f) => (
-            <Flex key={f} alignItems="flex-start">
-              <Center height="1.5em">
-                <UnlockIcon color="#b39573" mr={4} />
-              </Center>
+          {features &&
+            features.map((f) => (
+              <Flex key={f} alignItems="flex-start">
+                <Center height="1.5em">
+                  <UnlockIcon color="#b39573" mr={4} />
+                </Center>
 
-              <Text as="span">{f}</Text>
-            </Flex>
-          ))}
+                <Text as="span">{f}</Text>
+              </Flex>
+            ))}
         </Box>
         <Flex my={2} justifyContent="space-between">
-          {isLoggedIn ? (
+          {isLoggedIn && allowAdd ? (
             <Button
               colorScheme="teal"
               leftIcon={<Icon as={FaCartPlus} />}

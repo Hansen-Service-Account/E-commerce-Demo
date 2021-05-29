@@ -43,17 +43,17 @@ export default function Footer({}) {
           <Heading as="h5" size="md" px={1} py={4}>
             Site Links
           </Heading>
-          <NextLink href="#" passHref>
+          <NextLink href="/business-products" passHref>
             <Link p={1} fontSize="s" color="#999">
               For Business
             </Link>
           </NextLink>
-          <NextLink href="#" passHref>
+          <NextLink href="/residential-products" passHref>
             <Link p={1} fontSize="s" color="#999">
               For Home
             </Link>
           </NextLink>
-          <NextLink href="#" passHref>
+          <NextLink href="/contact" passHref>
             <Link p={1} fontSize="s" color="#999">
               Contact
             </Link>

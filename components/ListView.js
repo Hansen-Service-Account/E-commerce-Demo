@@ -10,6 +10,7 @@ const ListView = ({
   setCurrentProduct,
   controls,
   addToCart,
+  allowAdd,
 }) => {
   return (
     <>
@@ -40,7 +41,7 @@ const ListView = ({
             </Flex>
           </Box>
           <Flex direction="column" justifyContent="center">
-            {isLoggedIn ? (
+            {isLoggedIn && allowAdd ? (
               <Button
                 colorScheme="teal"
                 my={2}
