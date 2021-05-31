@@ -24,7 +24,11 @@ import {
   FaTwitterSquare,
   FaYoutubeSquare,
 } from "react-icons/fa";
-import { DARK_GOLD, HANSEN_CPQ_BASE_URL } from "../utils/constants";
+import {
+  DARK_GOLD,
+  HANSEN_CPQ_BASE_URL,
+  HANSEN_CUSTOMER_REF,
+} from "../utils/constants";
 import useOrders from "../hooks/useOrders";
 import { useToast } from "@chakra-ui/toast";
 import ErrorToast from "../components/ErrorToast";
@@ -143,7 +147,7 @@ export const getServerSideProps = withSession(async function ({ req }) {
   }
 
   //Hard coded temporarily
-  const customerRef = 100037;
+  const customerRef = HANSEN_CUSTOMER_REF;
 
   return {
     props: {

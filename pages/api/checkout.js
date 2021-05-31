@@ -39,7 +39,6 @@ export default withSession(async (req, res) => {
     await req.session.save();
     return res.status(200).json(result);
   } catch (error) {
-    console.log(error);
     return res.status(error.data.httpStatus).json(error.data);
   }
 });

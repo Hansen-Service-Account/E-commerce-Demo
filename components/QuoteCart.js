@@ -62,12 +62,16 @@ const QuoteCart = ({ quoteId, adding }) => {
       },
       false
     );
-    await fetch(
-      `${HANSEN_CPQ_BASE_URL}/api/quotes/${quoteId}/items/${itemId}`,
-      { method: "DELETE" }
-    );
-    mutateQuote();
+    try {
+      await fetch(`${HANSEN_CPQ_BASE_URL}/quotes/${quoteId}/items/${itemId}`, {
+        method: "DELETE",
+      });
+      mutateQuote();
+    } catch (error) {
+      mutateQuote();
+    }
   };
+  console.log(quote);
   return (
     <>
       <Button

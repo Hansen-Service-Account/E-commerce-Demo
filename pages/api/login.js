@@ -3,6 +3,7 @@ import withSession from "../../middleware/session";
 import { dbConnect } from "../../middleware/db";
 import bcrypt from "bcryptjs";
 import fetch from "node-fetch";
+import { HANSEN_CUSTOMER_REF } from "../../utils/constants";
 
 export default withSession(async (req, res) => {
   try {
@@ -30,13 +31,12 @@ export default withSession(async (req, res) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: user.firstName,
-            customerRef: "100037",
+            customerRef: `${HANSEN_CUSTOMER_REF}`,
             items: [],
           }),
         }
       );
       const newQuote = await result.json();
-      console.log(newQuote);
       req.session.set("quoteId", newQuote.id);
     }
 
@@ -48,7 +48,6 @@ export default withSession(async (req, res) => {
     const { password, ...userInfo } = _doc;
     res.status(200).json({ isLoggedIn: true, userInfo });
   } catch (error) {
-    console.log(error);
     res
       .status(500)
       .json({ error: { field: "server", message: error.message } });

@@ -12,14 +12,24 @@ import PricingSummary from "../components/PricingSummary";
 import useRecurringCharge from "../hooks/useRecurringCharge";
 import { BsShieldLockFill } from "react-icons/bs";
 import Icon from "@chakra-ui/icon";
-import { DARK_GOLD } from "../utils/constants";
+import {
+  DARK_GOLD,
+  HANSEN_CPQ_BASE_URL,
+  HANSEN_CUSTOMER_REF,
+} from "../utils/constants";
 import { Alert, AlertIcon } from "@chakra-ui/alert";
 import Payment from "../components/Payment";
 import { useState } from "react";
 import fetch from "../utils/fetchJson";
 import { useRouter } from "next/router";
+import { mutate } from "swr";
 
-export default function checkout({ username, quoteId, customerType }) {
+export default function checkout({
+  username,
+  quoteId,
+  customerType,
+  customerRef,
+}) {
   const { quote, isLoading, isError } = useQuote(quoteId);
   const [card, setCard] = useState("Visa");
   const [submitting, setSubmitting] = useState(false);
@@ -60,6 +70,7 @@ export default function checkout({ username, quoteId, customerType }) {
         headers: { "Content-Type": "application/json" },
       });
       setSubmitting(false);
+      await mutate(`${HANSEN_CPQ_BASE_URL}/customers/${customerRef}/orders`);
       toast({
         title: `Order ${result.orderId} has been placed.`,
         description: "Payment processed and order placed, redirecting...",
@@ -115,6 +126,7 @@ export default function checkout({ username, quoteId, customerType }) {
           </Flex>
           <PricingSummary
             nonRecurringCharge={
+              quote.pricingSummary.TotalPriceSummary.NonRecurring &&
               quote.pricingSummary.TotalPriceSummary.NonRecurring.ItemCharge
             }
             recurringCharges={recurringCharges}
@@ -126,6 +138,7 @@ export default function checkout({ username, quoteId, customerType }) {
             quoteId={quoteId}
             submitting={submitting}
             nonRecurringCharge={
+              quote.pricingSummary.TotalPriceSummary.NonRecurring &&
               quote.pricingSummary.TotalPriceSummary.NonRecurring.ItemCharge
             }
             recurringCharges={recurringCharges}
@@ -141,6 +154,8 @@ export const getServerSideProps = withSession(async function ({ req, res }) {
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
+  //Hardcoded customerRef for now
+  const customerRef = HANSEN_CUSTOMER_REF;
 
   if (!user) {
     return {
@@ -155,6 +170,7 @@ export const getServerSideProps = withSession(async function ({ req, res }) {
     props: {
       username: user.firstName,
       customerType: user.customerType,
+      customerRef,
       quoteId,
     },
   };

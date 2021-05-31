@@ -9,7 +9,10 @@ import withSession from "../../middleware/session";
 import User from "../../models/user";
 import Error from "next/error";
 import fetch from "../../utils/nodeFetchJson";
-import { HANSEN_CPQ_BASE_URL } from "../../utils/constants";
+import {
+  HANSEN_CPQ_BASE_URL,
+  HANSEN_CUSTOMER_REF,
+} from "../../utils/constants";
 import useOrder from "../../hooks/useOrder";
 import { useRouter } from "next/router";
 import { Alert, AlertIcon } from "@chakra-ui/alert";
@@ -120,7 +123,7 @@ export const getServerSideProps = withSession(async function ({ req, params }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: user.firstName,
-        customerRef: "100037",
+        customerRef: `${HANSEN_CUSTOMER_REF}`,
         items: [],
       }),
     });

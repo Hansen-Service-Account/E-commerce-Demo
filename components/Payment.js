@@ -28,7 +28,7 @@ export default function Payment({
         borderRadius="6px"
         borderWidth="2px"
       >
-        Your total Upfront payment is ${nonRecurringCharge}
+        Your total Upfront payment is ${nonRecurringCharge || 0}
         {recurringCharges.map(
           (c) => `, ${c.periodicity} payment is $${c.charge}`
         )}
