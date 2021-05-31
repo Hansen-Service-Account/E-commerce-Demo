@@ -42,6 +42,48 @@ export default function residentialCategoryID({
   const isLoggedIn = !!username;
   const toast = useToast();
   const [viewMode, setViewMode] = useState("cardview");
+  if (!quoteId) {
+    return (
+      <>
+        <Header username={username} />
+        <CategorySelection
+          type={categories.name}
+          categories={categories.children}
+        />
+        {customerType !== "Residential" && (
+          <Alert status="warning" w="80%" mx="auto" mt={8}>
+            <AlertIcon />
+            You must be a residential type customer to purchase these products.
+          </Alert>
+        )}
+        <Flex justifyContent="space-between" w="80%" mx="auto" mt={8}>
+          <Flex justifyContent="center" alignItems="center">
+            <Heading
+              as="h2"
+              size="xl"
+              textAlign="center"
+              color="#b39573"
+              mx={2}
+            >
+              {products.name}
+            </Heading>
+            <Badge color="white" bg="gray.500" fontSize="xl" mx={2}>
+              &nbsp; {products.entities.length} &nbsp;
+            </Badge>
+          </Flex>
+          <ViewControl viewMode={viewMode} setViewMode={setViewMode} />
+        </Flex>
+        <ProductsDisplay
+          products={products.entities}
+          viewMode={viewMode}
+          isLoggedIn={isLoggedIn}
+          allowAdd={customerType === "Residential"}
+        />
+        <QuoteCart quoteId={quoteId} />
+        <Footer />
+      </>
+    );
+  }
   const { quote, mutateQuote } = useQuote(quoteId);
   const [adding, setAdding] = useState(false);
   const addToCart = async (productId) => {
@@ -135,14 +177,14 @@ export const getServerSideProps = withSession(async function ({ req, params }) {
       `${HANSEN_CPQ_BASE_URL}/classifications/CDP`
     );
     const categories = classificationresult.find((r) => r.name === "Consumer");
+    const result = await fetcher(endPoint);
+    const products = result[0];
     if (!user) {
       return {
         props: { products, categories },
       };
     }
     const quoteId = req.session.get("quoteId");
-    const result = await fetcher(endPoint);
-    const products = result[0];
 
     return {
       props: {
@@ -154,6 +196,7 @@ export const getServerSideProps = withSession(async function ({ req, params }) {
       },
     };
   } catch (error) {
+    console.log(error);
     return {
       props: {
         status: error.response.status,

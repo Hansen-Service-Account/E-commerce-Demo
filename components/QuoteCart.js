@@ -38,7 +38,7 @@ const QuoteCart = ({ quoteId, adding }) => {
   if (!quoteId) {
     return null;
   }
-  console.log(quoteId);
+
   const toast = useToast();
   const { quote, mutateQuote, isLoading, isError } = useQuote(quoteId);
   if (isError) {

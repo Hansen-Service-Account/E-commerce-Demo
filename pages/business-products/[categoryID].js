@@ -45,6 +45,48 @@ export default function businessCategoryID({
   const isLoggedIn = !!username;
   const toast = useToast();
   const [viewMode, setViewMode] = useState("cardview");
+  if (!quoteId) {
+    return (
+      <>
+        <Header username={username} />
+        <CategorySelection
+          type={categories.name}
+          categories={categories.children}
+        />
+        {customerType !== "Business" && (
+          <Alert status="warning" w="80%" mx="auto" mt={8}>
+            <AlertIcon />
+            You must be a business type customer to purchase these products.
+          </Alert>
+        )}
+        <Flex justifyContent="space-between" w="80%" mx="auto" mt={8}>
+          <Flex justifyContent="center" alignItems="center">
+            <Heading
+              as="h2"
+              size="xl"
+              textAlign="center"
+              color="#b39573"
+              mx={2}
+            >
+              {products.name}
+            </Heading>
+            <Badge color="white" bg="gray.500" fontSize="xl" mx={2}>
+              &nbsp; {products.entities.length} &nbsp;
+            </Badge>
+          </Flex>
+          <ViewControl viewMode={viewMode} setViewMode={setViewMode} />
+        </Flex>
+        <ProductsDisplay
+          products={products.entities}
+          viewMode={viewMode}
+          isLoggedIn={isLoggedIn}
+          allowAdd={customerType === "Business"}
+        />
+        <QuoteCart quoteId={quoteId} />
+        <Footer />
+      </>
+    );
+  }
   const { quote, mutateQuote } = useQuote(quoteId);
   const [adding, setAdding] = useState(false);
 
