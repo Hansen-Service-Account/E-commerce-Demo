@@ -82,6 +82,7 @@ export default function Quote({ username, quoteId }) {
           <QuoteSummary quote={quote} deleteItem={deleteItem} />
           <PricingSummary
             nonRecurringCharge={
+              quote.pricingSummary.TotalPriceSummary.NonRecurring &&
               quote.pricingSummary.TotalPriceSummary.NonRecurring.ItemCharge
             }
             recurringCharges={recurringCharges}
