@@ -1,10 +1,10 @@
 import useSWR from "swr";
-import { HANSEN_CPQ_BASE_URL } from "../utils/constants";
+import { HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
 import fetcher from "../utils/fetchJson";
 
 const useOrders = (customerId) => {
   const { data, error, mutate } = useSWR(
-    `${HANSEN_CPQ_BASE_URL}/customers/${customerId}/orders`,
+    `${HANSEN_CPQ_V2_BASE_URL}/customers/${customerId}/orders`,
     fetcher
   );
 

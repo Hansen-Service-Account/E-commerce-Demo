@@ -8,15 +8,23 @@ import {
   Link,
   Menu,
   MenuButton,
+  MenuGroup,
   MenuItem,
   MenuList,
+  MenuDivider,
   useMediaQuery,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, HamburgerIcon } from "@chakra-ui/icons";
 import UserButton from "./UserButton";
 import { isServer } from "../utils/isServer";
+import useProductLines from "../hooks/useProductLines";
+import React from "react";
 
 const Navigation = ({ isLargerThan1024, username }) => {
+  const { productLines, isLoading, isError } = useProductLines();
+  if (!isLoading) {
+    console.log(productLines);
+  }
   return (
     <>
       {isLargerThan1024 || isServer() ? (
@@ -27,7 +35,7 @@ const Navigation = ({ isLargerThan1024, username }) => {
           p={4}
           color="black"
         >
-          <NextLink href="/business-products" passHref>
+          {/* <NextLink href="/business-products" passHref>
             <Link px={4} fontSize="xl">
               For Business
             </Link>
@@ -36,7 +44,32 @@ const Navigation = ({ isLargerThan1024, username }) => {
             <Link px={4} fontSize="xl">
               For Home
             </Link>
-          </NextLink>
+          </NextLink> */}
+          <Menu>
+            <MenuButton mx={4} as={Button} colorScheme="pink">
+              Products
+            </MenuButton>
+            <MenuList>
+              {productLines &&
+                productLines.map((p) => (
+                  <React.Fragment key={p.guid}>
+                    <MenuGroup title={p.name}>
+                      {p.children.map((c) => (
+                        <NextLink
+                          href={`/product-lines/${p.name.replace(
+                            / /g,
+                            "-"
+                          )}/offers/${c.name.replace(/ /g, "-")}`}
+                        >
+                          <MenuItem key={c.guid}>{c.name}</MenuItem>
+                        </NextLink>
+                      ))}
+                    </MenuGroup>
+                    <MenuDivider />
+                  </React.Fragment>
+                ))}
+            </MenuList>
+          </Menu>
           <NextLink href="/contact" passHref>
             <Link px={4} fontSize="xl">
               Contact

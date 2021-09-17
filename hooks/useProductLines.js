@@ -2,17 +2,17 @@ import useSWR from "swr";
 import { HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
 import fetcher from "../utils/fetchJson";
 
-const useOrder = (orderId) => {
-  const { data, error, mutate } = useSWR(
-    `${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}`,
+const useProductLines = () => {
+  const { data, error } = useSWR(
+    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`,
     fetcher
   );
+
   return {
-    order: data,
+    productLines: data,
     isLoading: !error && !data,
     isError: error,
-    mutateOrder: mutate,
   };
 };
 
-export default useOrder;
+export default useProductLines;

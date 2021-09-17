@@ -3,30 +3,10 @@ import withSession from "../middleware/session";
 import { dbConnect } from "../middleware/db";
 import User from "../models/user";
 import Footer from "../components/Footer";
+import { Box, Flex, Heading } from "@chakra-ui/layout";
+
 import {
-  Badge,
-  Box,
-  Flex,
-  Heading,
-  Stack,
-  StackDivider,
-  Text,
-  VStack,
-} from "@chakra-ui/layout";
-import { Avatar } from "@chakra-ui/avatar";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import Icon from "@chakra-ui/icon";
-import {
-  FaFacebook,
-  FaFacebookSquare,
-  FaGooglePlusSquare,
-  FaInstagramSquare,
-  FaTwitterSquare,
-  FaYoutubeSquare,
-} from "react-icons/fa";
-import {
-  DARK_GOLD,
-  HANSEN_CPQ_BASE_URL,
+  HANSEN_CPQ_V2_BASE_URL,
   HANSEN_CUSTOMER_REF,
 } from "../utils/constants";
 import useOrders from "../hooks/useOrders";
@@ -34,24 +14,29 @@ import { useToast } from "@chakra-ui/toast";
 import ErrorToast from "../components/ErrorToast";
 import { Alert, AlertIcon } from "@chakra-ui/alert";
 import { Spinner } from "@chakra-ui/spinner";
-import { Accordion, AccordionItem } from "@chakra-ui/accordion";
+import { Accordion } from "@chakra-ui/accordion";
 import OrderItem from "../components/OrderItem";
 import fetch from "../utils/fetchJson";
 
 export default function orderPage({ username, customerRef }) {
   const { orders, isLoading, isError, mutateOrders } = useOrders(customerRef);
   if (orders) {
-    orders.sort((a, b) => parseInt(b.OrderKey) - parseInt(a.OrderKey));
+    orders.orderSummaries.sort(
+      (a, b) =>
+        parseInt(b.order.orderSequenceNumber) -
+        parseInt(a.order.orderSequenceNumber)
+    );
   }
   const toast = useToast();
   const cancelOrder = async (orderId) => {
-    const ordersCopy = [...orders];
-    const index = ordersCopy.findIndex((o) => o.OrderKey === orderId);
-    ordersCopy[index].Status === "Cancelled";
-    mutateOrders([...ordersCopy], false);
+    const ordersCopy = [...orders.orderSummaries];
+    const index = ordersCopy.findIndex((o) => o.id === orderId);
+    ordersCopy[index].order.status === "cancelled";
+    mutateOrders({ ...orders, orderSumaries: ordersCopy }, false);
     try {
-      await fetch(`${HANSEN_CPQ_BASE_URL}/orders/${orderId}/cancel`, {
+      await fetch(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/cancel`, {
         method: "POST",
+        headers: { accept: "application/json" },
       });
       mutateOrders();
       toast({
@@ -84,7 +69,7 @@ export default function orderPage({ username, customerRef }) {
       position: "top",
     });
   }
-  if (orders && orders.length === 0) {
+  if (orders && orders.orderSummaries.length === 0) {
     return (
       <>
         <Header username={username} />
@@ -123,8 +108,8 @@ export default function orderPage({ username, customerRef }) {
             Order History
           </Heading>
           <Accordion allowToggle>
-            {orders.map((o) => (
-              <OrderItem key={o.OrderKey} order={o} cancelOrder={cancelOrder} />
+            {orders.orderSummaries.map((o) => (
+              <OrderItem key={o.id} order={o} cancelOrder={cancelOrder} />
             ))}
           </Accordion>
         </Box>

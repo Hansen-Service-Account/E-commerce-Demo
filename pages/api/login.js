@@ -3,7 +3,10 @@ import withSession from "../../middleware/session";
 import { dbConnect } from "../../middleware/db";
 import bcrypt from "bcryptjs";
 import fetch from "node-fetch";
-import { HANSEN_CUSTOMER_REF } from "../../utils/constants";
+import {
+  HANSEN_CPQ_V2_BASE_URL,
+  HANSEN_CUSTOMER_REF,
+} from "../../utils/constants";
 
 export default withSession(async (req, res) => {
   try {
@@ -24,19 +27,17 @@ export default withSession(async (req, res) => {
       });
     }
     if (!req.session.get("quoteId")) {
-      const result = await fetch(
-        "https://cpqserver-e30-cpq1.cloud.sigma-systems.com/api/quotes",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: user.firstName,
-            customerRef: `${HANSEN_CUSTOMER_REF}`,
-            items: [],
-          }),
-        }
-      );
+      const result = await fetch(`${HANSEN_CPQ_V2_BASE_URL}/quotes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quoteType: 0,
+          customerRef: `${HANSEN_CUSTOMER_REF}`,
+          items: [],
+        }),
+      });
       const newQuote = await result.json();
+      console.log(newQuote);
       req.session.set("quoteId", newQuote.id);
     }
 

@@ -286,7 +286,7 @@ const ItemConfig = ({ item, quoteId, setAdding, adding }) => {
                   window.scrollTo(0, 0);
                   setSubmittedError(true);
                 }
-                //If the validation results in no errors, toast about the success and set submitted Error to true. Proceed to update the item with the returned validated and priced item
+                //If the validation results in no errors, toast about the success and set submitted Error to false. Proceed to update the item with the returned validated and priced item
                 else {
                   toast({
                     title: "Reviewed successfully",

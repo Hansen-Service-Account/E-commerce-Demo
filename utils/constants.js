@@ -2,9 +2,11 @@ export const HANSEN_RED = "#e32525";
 export const DARK_GOLD = "#b39573";
 export const HOME_PAGE_ID = "7G2tWtLFILjICzh3PMhJ81";
 export const CONTENTFUL_BASE_URL = "https://cdn.contentful.com";
-export const HANSEN_CUSTOMER_REF = 100039;
+export const HANSEN_CUSTOMER_REF = 123;
 export const HANSEN_CPQ_BASE_URL =
   "https://cpqserver-e30-cpq1.cloud.sigma-systems.com/api";
+export const HANSEN_CPQ_V2_BASE_URL =
+  "https://cpqclient-presales1.csd.delivery.hansencx.com/api";
 export const RESIDENTIAL_SUB_CATEGORIES = [
   { id: "52288c67-4475-4fa0-ae27-64dad5b2b7c1", name: "Mobile" },
   { id: "2ac09274-ad39-4e6d-8029-f368b396b96b", name: "Internet" },

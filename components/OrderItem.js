@@ -42,22 +42,22 @@ export default function OrderItem({ order, cancelOrder }) {
         >
           <HStack spacing={3} flex="1">
             <Text fontWeight="bold" as="span">
-              {order.OrderKey}
+              {order.order.orderSequenceNumber}
             </Text>
             <Text as="span">
               Submitted on{" "}
-              {new Date(Date.parse(order.SubmissionDate)).toDateString()}
+              {new Date(Date.parse(order.submissionDate)).toDateString()}
             </Text>
             <Badge
               colorScheme={
-                order.Status === "In Progress"
+                order.order.status === "submitted"
                   ? "green"
-                  : order.Status === "Aborted"
+                  : order.order.status === "pendingSubmission"
                   ? "yellow"
                   : "red"
               }
             >
-              {order.Status}
+              {order.order.status}
             </Badge>
           </HStack>
           <AccordionIcon />
@@ -77,7 +77,7 @@ export default function OrderItem({ order, cancelOrder }) {
                     cursor="pointer"
                   /> */}
                     <IconButton
-                      disabled={order.Status !== "In Progress"}
+                      disabled={order.order.status !== "pendingSubmission"}
                       icon={<Icon w={6} h={6} as={FaStopCircle} color="red" />}
                     />
                   </PopoverTrigger>
@@ -94,7 +94,7 @@ export default function OrderItem({ order, cancelOrder }) {
                           <Button
                             colorScheme="red"
                             onClick={() => {
-                              cancelOrder(order.OrderKey);
+                              cancelOrder(order.id);
                               onClose();
                             }}
                           >
@@ -114,7 +114,7 @@ export default function OrderItem({ order, cancelOrder }) {
                 </>
               )}
             </Popover>
-            <VStack
+            {/* <VStack
               divider={<StackDivider />}
               align="flex-start"
               w="90%"
@@ -142,7 +142,7 @@ export default function OrderItem({ order, cancelOrder }) {
                   </Badge>
                 </Flex>
               ))}
-            </VStack>
+            </VStack> */}
           </Flex>
         </AccordionPanel>
       </h2>

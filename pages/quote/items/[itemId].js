@@ -1,6 +1,6 @@
 import { Box, Center, Flex, Heading } from "@chakra-ui/layout";
 import { Spinner } from "@chakra-ui/spinner";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header";
 import ItemConfig from "../../../components/ItemConfig";
@@ -10,30 +10,59 @@ import { dbConnect } from "../../../middleware/db";
 import withSession from "../../../middleware/session";
 import User from "../../../models/user";
 import Error from "next/error";
+import fetcher from "../../../utils/nodeFetchJson";
+import { HANSEN_CPQ_V2_BASE_URL } from "../../../utils/constants";
+import QuoteItem from "../../../components/QuoteItem";
+import fetch from "../../../utils/fetchJson";
 
 export default function itemId({ quoteId, itemId, username }) {
-  const { item, isLoading, isError } = useItem(quoteId, itemId);
+  // const { item, isLoading, isError } = useItem(quoteId, itemId);
+  const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
-  if (isError) {
-    return (
-      <>
-        <Header username={username} />
-        <Center height="70vh" overflow="hidden">
-          <Error
-            statusCode={isError.response.status}
-            title={isError.data.responseText}
-          />
-        </Center>
-        <QuoteCart quoteId={quoteId} />
-        <Footer />
-      </>
-    );
-  }
+  const [item, setItem] = useState({});
+  useEffect(async () => {
+    try {
+      setLoading(true);
+      const result = await fetch(
+        `${HANSEN_CPQ_V2_BASE_URL}/configuration/candidateconfiguration?include=compiledSpecification`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            configuration: { id: quoteId, itemId: itemId },
+          }),
+        }
+      );
+      setItem({ ...result.candidateConfiguration });
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  // if (isError) {
+  //   return (
+  //     <>
+  //       <Header username={username} />
+  //       <Center height="70vh" overflow="hidden">
+  //         <Error
+  //           statusCode={isError.response.status}
+  //           title={isError.data.responseText}
+  //         />
+  //       </Center>
+  //       <QuoteCart quoteId={quoteId} />
+  //       <Footer />
+  //     </>
+  //   );
+  // }
 
   return (
     <>
       <Header username={username} />
-      {isLoading ? (
+      {loading ? (
         <Flex h="70vh" justify="center" align="center" direction="column">
           <Spinner
             thickness="4px"
@@ -47,13 +76,14 @@ export default function itemId({ quoteId, itemId, username }) {
           </Heading>
         </Flex>
       ) : (
-        <ItemConfig
-          item={item}
-          metaType={{ ...item.metaTypeLookup }}
-          quoteId={quoteId}
-          setAdding={setAdding}
-          adding={adding}
-        />
+        // <ItemConfig
+        //   item={item}
+        //   metaType={{ ...item.metaTypeLookup }}
+        //   quoteId={quoteId}
+        //   setAdding={setAdding}
+        //   adding={adding}
+        // />
+        <QuoteItem item={item} />
       )}
       <QuoteCart quoteId={quoteId} adding={adding} />
       <Footer />
