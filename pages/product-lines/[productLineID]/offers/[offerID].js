@@ -155,7 +155,7 @@ export default function offerID({
     <>
       <Header username={username} />
       <CategorySelection
-        type={productLine.name}
+        urlPrefix={`/product-lines/${productLineID}/offers`}
         categories={productLine.children}
       />
       {customerType !== "Residential" && (

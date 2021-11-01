@@ -11,6 +11,7 @@ const CartItem = ({ item, deleteItem, onClose }) => {
   const { ItemisedPricingSummary } = item.currentPricing.Pricing;
   const { metaTypeLookup } = item;
   const router = useRouter();
+  console.log(item);
   return (
     <Flex
       direction="column"

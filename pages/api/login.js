@@ -32,7 +32,7 @@ export default withSession(async (req, res) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           quoteType: 0,
-          customerRef: `${HANSEN_CUSTOMER_REF}`,
+          customerRef: `0001`,
           items: [],
         }),
       });

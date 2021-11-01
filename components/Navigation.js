@@ -1,5 +1,4 @@
 import NextLink from "next/link";
-import { HANSEN_RED } from "../utils/constants";
 import {
   Box,
   Button,
@@ -14,7 +13,7 @@ import {
   MenuDivider,
   useMediaQuery,
 } from "@chakra-ui/react";
-import { ChevronDownIcon, HamburgerIcon } from "@chakra-ui/icons";
+import { HamburgerIcon } from "@chakra-ui/icons";
 import UserButton from "./UserButton";
 import { isServer } from "../utils/isServer";
 import useProductLines from "../hooks/useProductLines";
@@ -56,6 +55,7 @@ const Navigation = ({ isLargerThan1024, username }) => {
                     <MenuGroup title={p.name}>
                       {p.children.map((c) => (
                         <NextLink
+                          key={c.guid}
                           href={`/product-lines/${p.name.replace(
                             / /g,
                             "-"

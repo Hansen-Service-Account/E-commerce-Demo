@@ -45,8 +45,12 @@ const SelectInput = ({
           </option>
         )}
         {options.map((opt) => (
-          <option key={opt.value || opt.name} value={opt.id} id={opt.id}>
-            {opt.value || opt.name}
+          <option
+            key={opt.value || opt.name || opt.detail}
+            value={opt.id}
+            id={opt.id}
+          >
+            {opt.value || opt.name || opt.detail}
           </option>
         ))}
       </Select>

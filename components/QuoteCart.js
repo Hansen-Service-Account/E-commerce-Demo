@@ -27,7 +27,7 @@ import { Spinner } from "@chakra-ui/spinner";
 import React from "react";
 import { FaShoppingCart } from "react-icons/fa";
 import useQuote from "../hooks/useQuote";
-import { DARK_GOLD, HANSEN_CPQ_BASE_URL } from "../utils/constants";
+import { DARK_GOLD, HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
 import CartItem from "./CartItem";
 import { useRouter } from "next/router";
 import fetch from "../utils/fetchJson";
@@ -63,9 +63,16 @@ const QuoteCart = ({ quoteId, adding }) => {
       false
     );
     try {
-      await fetch(`${HANSEN_CPQ_BASE_URL}/quotes/${quoteId}/items/${itemId}`, {
-        method: "DELETE",
-      });
+      await fetch(
+        `${HANSEN_CPQ_V2_BASE_URL}/quotes/${quoteId}/items/${itemId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+        }
+      );
       mutateQuote();
     } catch (error) {
       mutateQuote();

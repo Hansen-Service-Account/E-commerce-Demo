@@ -6,45 +6,28 @@ import { useState } from "react";
 import usePhoneNumber from "../hooks/usePhoneNumber";
 import useSerialNumber from "../hooks/useSerialNumber";
 import useQuote from "../hooks/useQuote";
-import { DARK_GOLD, HANSEN_CPQ_BASE_URL } from "../utils/constants";
-import renderEntities from "../utils/renderEntities";
+import { DARK_GOLD, HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
+import { renderItem } from "../utils/renderItem";
 import useItem from "../hooks/useItem";
 import ErrorPrompt from "./ErrorPrompt";
 import fetcher from "../utils/fetchJson";
 import ErrorToast from "./ErrorToast";
+import { filterUnsupportedProperty } from "../utils/filterProperty";
 
-const ItemConfig = ({ item, quoteId, setAdding, adding }) => {
+const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
   const [errors, setErrors] = useState([]);
 
   //Destructure the quote item for object operations
   const {
-    offerSpecification: {
-      //Basic information about the item
-      name,
-      description,
-
-      //The sub entities and all related configurations
-      productToProduct: subConfigurations,
-
-      //The charges which will incurr for the item and the sub entities
-      productToCharge: rootCharges,
-    },
-
-    //Metadata and type information lookup for entities using entity IDs
+    name,
+    description,
     metaTypeLookup,
-
     //Contains the default entities selected for the package/bundle
     productCandidate,
   } = item;
 
   //Set up toaster for the item configurations
   const toast = useToast();
-
-  //Load the phone numbers for configuration
-  const { phoneNumber, isLoading: phoneIsLoading } = usePhoneNumber(quoteId);
-
-  //Load the serial numbers for configuration
-  const { serialNumber, isLoading: serialIsLoading } = useSerialNumber(quoteId);
 
   //Use mutateQuote provided by SWR to revalidate quote data after http PUT
   const { mutateQuote } = useQuote(quoteId);
@@ -56,6 +39,32 @@ const ItemConfig = ({ item, quoteId, setAdding, adding }) => {
 
   //TBD, state to keep error status (only TRUE/FALSE for now) upon submission for review (evaluateRules endpoint)
   const [submittedError, setSubmittedError] = useState(false);
+
+  const handleInput = (e, parentEntity) => {
+    if (
+      parentEntity.ConfiguredValue.find(
+        (c) => c.CharacteristicID === e.target.id
+      )
+    ) {
+      const index = parentEntity.ConfiguredValue.findIndex(
+        (c) => c.CharacteristicID === e.target.id
+      );
+      parentEntity.ConfiguredValue.splice(index, 1, {
+        UseArea: e.target.name,
+        CharacteristicID: e.target.id,
+        Action: "modify",
+        Value: [{ Value: e.target.value }],
+      });
+    } else {
+      parentEntity.ConfiguredValue.push({
+        UseArea: e.target.name,
+        CharacteristicID: e.target.id,
+        Action: "modify",
+        Value: [{ Value: e.target.value }],
+      });
+    }
+    return configuredItem;
+  };
 
   /*Onchange function that handles select input changes
   @param {object} e: Event that occurred
@@ -167,10 +176,10 @@ const ItemConfig = ({ item, quoteId, setAdding, adding }) => {
   const handleReview = async (quoteId, itemId, item) => {
     try {
       const res = await fetcher(
-        `${HANSEN_CPQ_BASE_URL}/quotes/${quoteId}/items/${itemId}/evaluateRules`,
+        `${HANSEN_CPQ_V2_BASE_URL}/validation/evaluateCompatibility/?quoteId=${quoteId}&quoteItemId=${itemId}`,
         {
           method: "POST",
-          body: JSON.stringify(item),
+          body: JSON.stringify(item.productCandidate),
           headers: { "Content-Type": "application/json" },
         }
       );
@@ -188,15 +197,19 @@ const ItemConfig = ({ item, quoteId, setAdding, adding }) => {
   */
   const handleUpdate = async (quoteId, itemId, item) => {
     try {
+      const cleanedUpItem = { ...item };
+      filterUnsupportedProperty(item.productCandidate);
       const res = await fetcher(
-        `${HANSEN_CPQ_BASE_URL}/quotes/${quoteId}/items/${itemId}?include=candidate`,
+        `${HANSEN_CPQ_V2_BASE_URL}/quotes/${quoteId}/items/${itemId}?include=candidate`,
         {
           method: "PUT",
-          body: JSON.stringify(item),
-          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cleanedUpItem),
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
         }
       );
-
       mutateItem();
       mutateQuote();
       return res;
@@ -206,18 +219,19 @@ const ItemConfig = ({ item, quoteId, setAdding, adding }) => {
     }
   };
 
+  console.log(productCandidate, itemSpec);
   return (
     <>
       <Box w="90%" mx="auto" pt={8}>
-        <Heading as="h3" my={4}>
+        <Heading as="h3" mt={4} mb={8}>
           {name}
         </Heading>
         <Text as="p" my={4}>
           {description}
         </Text>
         <ErrorPrompt errors={errors} metaTypeLookup={metaTypeLookup} />
-        <Box pt={4}>
-          {/* If there are charges directly attached to the package/bundle, render them at top */}
+        {/* <Box pt={4}>
+
           {rootCharges &&
             rootCharges.map((r) => (
               <Badge
@@ -238,13 +252,10 @@ const ItemConfig = ({ item, quoteId, setAdding, adding }) => {
                   ))}
               </Badge>
             ))}
-        </Box>
+        </Box> */}
 
-        <VStack
-          divider={<StackDivider borderColor="gray.200" />}
-          align="stretch"
-        >
-          {renderEntities({
+        <VStack align="stretch">
+          {/* {renderEntities({
             entity: subConfigurations,
             color: DARK_GOLD,
             parentEntity: configuredItem,
@@ -256,6 +267,20 @@ const ItemConfig = ({ item, quoteId, setAdding, adding }) => {
             phoneNumber: phoneIsLoading ? [] : phoneNumber,
             serialNumber: serialIsLoading ? [] : serialNumber,
             submittedError,
+          })} */}
+          {renderItem({
+            itemSpec,
+            entityHash: Object.keys(
+              itemSpec.compiledSpecification.entityContext[
+                itemSpec.compiledSpecification.rootHashPath
+              ].children
+            ),
+            color: "lightcyan",
+            parentEntity: configuredItem,
+            setState: setConfiguredItem,
+            handleChoose,
+            handleSelect,
+            handleInput,
           })}
         </VStack>
 
@@ -265,15 +290,14 @@ const ItemConfig = ({ item, quoteId, setAdding, adding }) => {
             onClick={async () => {
               try {
                 setAdding(true);
-
                 const submissionResult = await handleReview(quoteId, item.id, {
                   ...item,
                   productCandidate: configuredItem,
                 });
-                setErrors([...submissionResult.currentValidation.errors]);
+                setErrors([...submissionResult.validationResponse.errors]);
 
                 //If the validation results in errors, toast about the error and set submittedError to true
-                if (!submissionResult.currentValidation.valid) {
+                if (!submissionResult.validationResponse.valid) {
                   toast({
                     title: "Review error",
                     description:
@@ -298,7 +322,11 @@ const ItemConfig = ({ item, quoteId, setAdding, adding }) => {
                     position: "top",
                   });
                   setSubmittedError(false);
-                  await handleUpdate(quoteId, item.id, submissionResult);
+                  const updatedItem = {
+                    ...item,
+                    productCandidate: submissionResult.productCandidate,
+                  };
+                  await handleUpdate(quoteId, item.id, updatedItem);
                 }
 
                 setAdding(false);

@@ -11,18 +11,18 @@ import withSession from "../../../middleware/session";
 import User from "../../../models/user";
 import Error from "next/error";
 import fetcher from "../../../utils/nodeFetchJson";
-import { HANSEN_CPQ_V2_BASE_URL } from "../../../utils/constants";
+import { DARK_GOLD, HANSEN_CPQ_V2_BASE_URL } from "../../../utils/constants";
 import QuoteItem from "../../../components/QuoteItem";
 import fetch from "../../../utils/fetchJson";
+import { renderItem } from "../../../utils/renderItem";
 
 export default function itemId({ quoteId, itemId, username }) {
-  // const { item, isLoading, isError } = useItem(quoteId, itemId);
-  const [loading, setLoading] = useState(false);
+  const { item, isLoading, isError } = useItem(quoteId, itemId);
+  const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
-  const [item, setItem] = useState({});
+  const [itemSpec, setItemSpec] = useState({});
   useEffect(async () => {
     try {
-      setLoading(true);
       const result = await fetch(
         `${HANSEN_CPQ_V2_BASE_URL}/configuration/candidateconfiguration?include=compiledSpecification`,
         {
@@ -36,13 +36,12 @@ export default function itemId({ quoteId, itemId, username }) {
           }),
         }
       );
-      setItem({ ...result.candidateConfiguration });
+      setItemSpec({ ...result });
       setLoading(false);
     } catch (error) {
       console.log(error);
     }
   }, []);
-
   // if (isError) {
   //   return (
   //     <>
@@ -76,14 +75,13 @@ export default function itemId({ quoteId, itemId, username }) {
           </Heading>
         </Flex>
       ) : (
-        // <ItemConfig
-        //   item={item}
-        //   metaType={{ ...item.metaTypeLookup }}
-        //   quoteId={quoteId}
-        //   setAdding={setAdding}
-        //   adding={adding}
-        // />
-        <QuoteItem item={item} />
+        <ItemConfig
+          item={item}
+          quoteId={quoteId}
+          setAdding={setAdding}
+          adding={adding}
+          itemSpec={itemSpec}
+        />
       )}
       <QuoteCart quoteId={quoteId} adding={adding} />
       <Footer />
