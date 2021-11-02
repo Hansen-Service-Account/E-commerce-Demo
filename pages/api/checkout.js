@@ -2,7 +2,7 @@ import withSession from "../../middleware/session";
 import User from "../../models/user";
 import { dbConnect } from "../../middleware/db";
 import fetch from "../../utils/nodeFetchJson";
-import { HANSEN_CPQ_BASE_URL } from "../../utils/constants";
+import { HANSEN_CPQ_V2_BASE_URL } from "../../utils/constants";
 
 export default withSession(async (req, res) => {
   try {
@@ -29,7 +29,7 @@ export default withSession(async (req, res) => {
 
     const { quoteId } = req.body;
     const result = await fetch(
-      `${HANSEN_CPQ_BASE_URL}/orders/${quoteId}/submit`,
+      `${HANSEN_CPQ_V2_BASE_URL}/orders/${quoteId}/submit`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

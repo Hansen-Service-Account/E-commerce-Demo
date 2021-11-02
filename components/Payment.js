@@ -3,9 +3,10 @@ import { Center, Flex, Heading } from "@chakra-ui/layout";
 import React from "react";
 import { DARK_GOLD } from "../utils/constants";
 import { RiMastercardFill, RiVisaFill } from "react-icons/ri";
-import TextInput from "./TextInput";
+import { TextInput } from "./TextInput";
 import { Spacer } from "@chakra-ui/layout";
 import { Button } from "@chakra-ui/button";
+import NextLink from "next/link";
 
 export default function Payment({
   nonRecurringCharge,
@@ -79,7 +80,9 @@ export default function Payment({
         </Flex>
       </Flex>
       <Flex w="100%" justify="space-between">
-        <Button>Continue Shopping</Button>
+        <NextLink href="/product-lines/All-Product-Lines/offers/All-Offers">
+          <Button>Continue Shopping</Button>
+        </NextLink>
         <Button
           colorScheme="green"
           onClick={() => checkout(quoteId)}
