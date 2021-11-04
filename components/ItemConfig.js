@@ -40,6 +40,11 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
   //TBD, state to keep error status (only TRUE/FALSE for now) upon submission for review (evaluateRules endpoint)
   const [submittedError, setSubmittedError] = useState(false);
 
+  const handleNumChange = (value, parentEntity) => {
+    parentEntity.UnitQuantity = value;
+    return configuredItem;
+  };
+
   const handleInput = (e, parentEntity) => {
     if (
       parentEntity.ConfiguredValue.find(
@@ -281,6 +286,7 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
             handleChoose,
             handleSelect,
             handleInput,
+            handleNumChange,
           })}
         </VStack>
 

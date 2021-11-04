@@ -1,5 +1,16 @@
 import { renderItem } from "../utils/renderItem";
-import { Box, Flex, Text, Collapse, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Text,
+  Collapse,
+  useToast,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+} from "@chakra-ui/react";
 import { DARK_GOLD } from "../utils/constants";
 import { renderInputs } from "../utils/renderInputs";
 import { CheckCircleIcon } from "@chakra-ui/icons";
@@ -13,15 +24,14 @@ const EntityConfig = ({
   handleChoose,
   handleSelect,
   handleInput,
+  handleNumChange,
 }) => {
   const currentEntity =
     itemSpec.compiledSpecification.entityContext[entityHash];
   if (!currentEntity) {
     return null;
   }
-  if (currentEntity.currency) {
-    return null;
-  }
+
   if (currentEntity.isGrandfathered) {
     return null;
   }
@@ -31,6 +41,7 @@ const EntityConfig = ({
 
   const toast = useToast();
 
+  console.log(parentEntity);
   return (
     <Box w="100%" ml="auto">
       <Flex
@@ -94,6 +105,37 @@ const EntityConfig = ({
           )
         }
       >
+        {currentEntity.currency && (
+          <>
+            <Text py={2}>Quantity</Text>
+            <NumberInput
+              step={1}
+              defaultValue={0}
+              value={
+                parentEntity.ChildEntity.find(
+                  (ce) => ce.EntityID === currentEntity.entityId
+                ).UnitQuantity
+              }
+              min={0}
+              max={currentEntity.maxOccurs}
+              onChange={(value) => {
+                const result = handleNumChange(
+                  value,
+                  parentEntity.ChildEntity.find(
+                    (ce) => ce.EntityID === currentEntity.entityId
+                  )
+                );
+                setState({ ...result });
+              }}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </>
+        )}
         {parentEntity &&
           renderInputs(
             currentEntity.characteristics,
@@ -128,6 +170,7 @@ const EntityConfig = ({
               handleChoose,
               handleSelect,
               handleInput,
+              handleNumChange,
             })}
         </Flex>
       </Collapse>

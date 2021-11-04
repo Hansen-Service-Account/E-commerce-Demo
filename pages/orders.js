@@ -20,6 +20,7 @@ import fetch from "../utils/fetchJson";
 
 export default function orderPage({ username, customerRef }) {
   const { orders, isLoading, isError, mutateOrders } = useOrders(customerRef);
+  console.log(orders);
   if (orders) {
     orders.orderSummaries.sort(
       (a, b) =>
@@ -28,6 +29,11 @@ export default function orderPage({ username, customerRef }) {
     );
   }
   const toast = useToast();
+  // const submitOrder = async(orderId) => {
+  //   try{
+  //     await fetch(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/submit`,{method:"POST",headers:{"Content":"application/json"},body:{}})
+  //   }
+  // }
   const cancelOrder = async (orderId) => {
     const ordersCopy = [...orders.orderSummaries];
     const index = ordersCopy.findIndex((o) => o.id === orderId);

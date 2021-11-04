@@ -27,15 +27,30 @@ export default withSession(async (req, res) => {
       });
     }
 
-    const { quoteId } = req.body;
+    const { quoteId, quoteLastUpdated, activationDate } = req.body;
+    console.log(quoteLastUpdated, activationDate);
     const result = await fetch(
-      `${HANSEN_CPQ_V2_BASE_URL}/orders/${quoteId}/submit`,
+      `${HANSEN_CPQ_V2_BASE_URL}/quotes/${quoteId}/convertToOrder`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quoteLastUpdated,
+          activationDate,
+        }),
       }
     );
     req.session.set("orderId", result.orderId);
+    const newQuote = await fetch(`${HANSEN_CPQ_V2_BASE_URL}/quotes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        quoteType: 0,
+        customerRef: `0001`,
+        items: [],
+      }),
+    });
+    req.session.set("quoteId", newQuote.id);
     await req.session.save();
     return res.status(200).json(result);
   } catch (error) {

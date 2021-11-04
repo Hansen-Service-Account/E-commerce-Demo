@@ -1,7 +1,11 @@
 export const filterUnsupportedProperty = (obj) => {
   //From the object root, remove any property with key ApplicableDiscount or Action
   Object.keys(obj).forEach((key) => {
-    if (key === "ApplicableDiscount" || key === "Action") {
+    if (
+      key === "ApplicableDiscount" ||
+      key === "Action" ||
+      key === "ItemSource"
+    ) {
       delete obj[key];
     }
   });
@@ -21,6 +25,12 @@ export const filterUnsupportedProperty = (obj) => {
   if (obj.hasOwnProperty("ChildEntity")) {
     obj.ChildEntity.forEach((ce) => {
       filterUnsupportedProperty(ce);
+    });
+  }
+
+  if (obj.hasOwnProperty("RateAttribute")) {
+    obj.RateAttribute.forEach((ra) => {
+      filterUnsupportedProperty(ra);
     });
   }
 };

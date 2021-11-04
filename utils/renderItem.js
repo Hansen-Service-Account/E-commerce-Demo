@@ -8,6 +8,7 @@ export const renderItem = ({
   handleChoose,
   handleSelect,
   handleInput,
+  handleNumChange,
   setState,
 }) => {
   return entityHash.map((h) => (
@@ -21,6 +22,7 @@ export const renderItem = ({
       handleChoose={handleChoose}
       handleSelect={handleSelect}
       handleInput={handleInput}
+      handleNumChange={handleNumChange}
     />
   ));
 };

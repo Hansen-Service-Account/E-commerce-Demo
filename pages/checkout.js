@@ -14,7 +14,7 @@ import { BsShieldLockFill } from "react-icons/bs";
 import Icon from "@chakra-ui/icon";
 import {
   DARK_GOLD,
-  HANSEN_CPQ_BASE_URL,
+  HANSEN_CPQ_V2_BASE_URL,
   HANSEN_CUSTOMER_REF,
 } from "../utils/constants";
 import { Alert, AlertIcon } from "@chakra-ui/alert";
@@ -66,19 +66,24 @@ export default function checkout({
     try {
       const result = await fetch("/api/checkout", {
         method: "POST",
-        body: JSON.stringify({ quoteId }),
+        body: JSON.stringify({
+          quoteId,
+          quoteLastUpdated: quote.updated,
+          activationDate: new Date().toDateString,
+        }),
         headers: { "Content-Type": "application/json" },
       });
       setSubmitting(false);
-      await mutate(`${HANSEN_CPQ_BASE_URL}/customers/${customerRef}/orders`);
+      await mutate(`${HANSEN_CPQ_V2_BASE_URL}/customers/${customerRef}/orders`);
       toast({
-        title: `Order ${result.orderId} has been placed.`,
+        title: `Order ${result.orderReference} has been placed.`,
         description: "Payment processed and order placed, redirecting...",
         duration: 2000,
         isClosable: false,
         position: "top",
         status: "success",
-        onCloseComplete: () => router.push(`/confirmation/${result.orderId}`),
+        onCloseComplete: () =>
+          router.push(`/confirmation/${result.orderReference}`),
       });
     } catch (error) {
       setSubmitting(false);

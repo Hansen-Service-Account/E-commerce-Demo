@@ -29,9 +29,11 @@ import { Portal } from "@chakra-ui/portal";
 import { Tooltip } from "@chakra-ui/tooltip";
 import React from "react";
 import { FaStopCircle } from "react-icons/fa";
+import { ImEnter } from "react-icons/im";
 import { DARK_GOLD } from "../utils/constants";
 
-export default function OrderItem({ order, cancelOrder }) {
+export default function OrderItem({ order, cancelOrder, submitOrder }) {
+  console.log(order);
   return (
     <AccordionItem my={4} border="none">
       <h2>
@@ -44,9 +46,17 @@ export default function OrderItem({ order, cancelOrder }) {
             <Text fontWeight="bold" as="span">
               {order.order.orderSequenceNumber}
             </Text>
+            {order.submissionDate && (
+              <Text as="span">
+                Submitted on{" "}
+                {new Date(Date.parse(order.submissionDate)).toDateString()}
+              </Text>
+            )}
             <Text as="span">
-              Submitted on{" "}
-              {new Date(Date.parse(order.submissionDate)).toDateString()}
+              Created on{" "}
+              {new Date(
+                Date.parse(order.order.created.timestamp)
+              ).toDateString()}
             </Text>
             <Badge
               colorScheme={
@@ -63,7 +73,7 @@ export default function OrderItem({ order, cancelOrder }) {
           <AccordionIcon />
         </AccordionButton>
         <AccordionPanel>
-          <Flex align="center" mt={4}>
+          <Flex mt={4}>
             <Popover placement="right-end">
               {({ isOpen, onClose }) => (
                 <>
@@ -77,6 +87,7 @@ export default function OrderItem({ order, cancelOrder }) {
                     cursor="pointer"
                   /> */}
                     <IconButton
+                      mr={6}
                       disabled={order.order.status !== "pendingSubmission"}
                       icon={<Icon w={6} h={6} as={FaStopCircle} color="red" />}
                     />
@@ -93,6 +104,56 @@ export default function OrderItem({ order, cancelOrder }) {
                         <Flex justify="space-between" mt={4}>
                           <Button
                             colorScheme="red"
+                            onClick={() => {
+                              cancelOrder(order.id);
+                              onClose();
+                            }}
+                          >
+                            YES
+                          </Button>
+                          <Button onClick={onClose}>NO</Button>
+                        </Flex>
+                      </PopoverBody>
+                      <PopoverFooter>
+                        <Alert status="warning">
+                          <AlertIcon />
+                          Cannot be undone
+                        </Alert>
+                      </PopoverFooter>
+                    </PopoverContent>
+                  </Portal>
+                </>
+              )}
+            </Popover>
+            <Popover placement="right-end">
+              {({ isOpen, onClose }) => (
+                <>
+                  <PopoverTrigger>
+                    {/* <Icon
+                    w={6}
+                    h={6}
+                    as={FaStopCircle}
+                    color="red"
+                    _hover={{ color: "black" }}
+                    cursor="pointer"
+                  /> */}
+                    <IconButton
+                      disabled={order.order.status !== "pendingSubmission"}
+                      icon={<Icon w={6} h={6} as={ImEnter} color="green" />}
+                    />
+                  </PopoverTrigger>
+                  <Portal>
+                    <PopoverContent>
+                      <PopoverArrow />
+                      <PopoverCloseButton />
+                      <PopoverHeader fontWeight="bold">
+                        Submitting the order
+                      </PopoverHeader>
+                      <PopoverBody>
+                        <Text>Are you sure you want to submit the order?</Text>
+                        <Flex justify="space-between" mt={4}>
+                          <Button
+                            colorScheme="green"
                             onClick={() => {
                               cancelOrder(order.id);
                               onClose();

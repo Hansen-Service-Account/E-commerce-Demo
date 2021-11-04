@@ -37,7 +37,6 @@ export default withSession(async (req, res) => {
         }),
       });
       const newQuote = await result.json();
-      console.log(newQuote);
       req.session.set("quoteId", newQuote.id);
     }
 
