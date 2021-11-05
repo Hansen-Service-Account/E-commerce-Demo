@@ -29,15 +29,42 @@ export default function orderPage({ username, customerRef }) {
     );
   }
   const toast = useToast();
-  // const submitOrder = async(orderId) => {
-  //   try{
-  //     await fetch(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/submit`,{method:"POST",headers:{"Content":"application/json"},body:{}})
-  //   }
-  // }
+  const submitOrder = async (orderId, lastUpdated) => {
+    const ordersCopy = [...orders.orderSummaries];
+    const index = ordersCopy.findIndex((o) => o.id === orderId);
+    ordersCopy[index].order.status = "submitted";
+    mutateOrders({ ...orders, orderSumaries: ordersCopy }, false);
+    try {
+      await fetch(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/submit`, {
+        method: "POST",
+        headers: { accept: "application/json" },
+        body: JSON.stringify({ orderLastUpdated: lastUpdated }),
+      });
+      mutateOrders();
+      toast({
+        title: `Order ${orderId} submitted`,
+        description: "Order has been successfully submitted.",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+        position: "top",
+      });
+    } catch (error) {
+      mutateOrders();
+      toast({
+        render: ({ id, onClose }) => (
+          <ErrorToast error={error} onClose={onClose} />
+        ),
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  };
   const cancelOrder = async (orderId) => {
     const ordersCopy = [...orders.orderSummaries];
     const index = ordersCopy.findIndex((o) => o.id === orderId);
-    ordersCopy[index].order.status === "cancelled";
+    ordersCopy[index].order.status = "cancelled";
     mutateOrders({ ...orders, orderSumaries: ordersCopy }, false);
     try {
       await fetch(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/cancel`, {
@@ -115,7 +142,12 @@ export default function orderPage({ username, customerRef }) {
           </Heading>
           <Accordion allowToggle>
             {orders.orderSummaries.map((o) => (
-              <OrderItem key={o.id} order={o} cancelOrder={cancelOrder} />
+              <OrderItem
+                key={o.id}
+                order={o}
+                cancelOrder={cancelOrder}
+                submitOrder={submitOrder}
+              />
             ))}
           </Accordion>
         </Box>

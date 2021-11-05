@@ -35,13 +35,26 @@ const EntityConfig = ({
   if (currentEntity.isGrandfathered) {
     return null;
   }
+
+  if (currentEntity.currency) {
+    return null;
+  }
+
+  if (currentEntity.name.includes("CFS")) {
+    return null;
+  }
+
   if (currentEntity.isUiFiltered === true) {
     return null;
   }
 
   const toast = useToast();
+  const matchingEntity =
+    parentEntity &&
+    parentEntity.ChildEntity.find(
+      (ce) => ce.EntityID === currentEntity.entityId
+    );
 
-  console.log(parentEntity);
   return (
     <Box w="100%" ml="auto">
       <Flex
@@ -73,7 +86,10 @@ const EntityConfig = ({
         }}
       >
         <Text as="span" size="lg" fontWeight="bold" id={currentEntity.entityId}>
-          {currentEntity.name} {currentEntity.minOccurs}
+          {currentEntity.name}{" "}
+          {parentEntity && matchingEntity && matchingEntity.entityQuantity === 1
+            ? ""
+            : matchingEntity && matchingEntity.entityQuantity}
         </Text>
         {parentEntity &&
         parentEntity.ChildEntity.find(
@@ -97,6 +113,7 @@ const EntityConfig = ({
         direction="column"
         alignItems="flex-start"
         p={0}
+        my={0}
         name={currentEntity.entityId}
         in={
           parentEntity &&
@@ -105,7 +122,7 @@ const EntityConfig = ({
           )
         }
       >
-        {currentEntity.currency && (
+        {currentEntity.currency && parentEntity && (
           <>
             <Text py={2}>Quantity</Text>
             <NumberInput
@@ -153,7 +170,7 @@ const EntityConfig = ({
               ),
             setState
           )}
-        <Flex w="90%" direction="column" ml="auto" my={4}>
+        <Flex w="90%" direction="column" ml="auto" my={0}>
           {currentEntity.children &&
             parentEntity &&
             renderItem({

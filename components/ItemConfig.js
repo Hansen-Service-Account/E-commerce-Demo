@@ -13,6 +13,7 @@ import ErrorPrompt from "./ErrorPrompt";
 import fetcher from "../utils/fetchJson";
 import ErrorToast from "./ErrorToast";
 import { filterUnsupportedProperty } from "../utils/filterProperty";
+import { groupSameEntities } from "../utils/groupSameEntities";
 
 const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
   const [errors, setErrors] = useState([]);
@@ -34,8 +35,14 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
 
   const { mutateItem } = useItem(quoteId, item.id);
 
+  const groupedConfiguredItem = groupSameEntities({ ...productCandidate });
+
   //Keep a copy of the initial productCandidate in the component's state
-  const [configuredItem, setConfiguredItem] = useState({ ...productCandidate });
+  const [configuredItem, setConfiguredItem] = useState({
+    ...groupedConfiguredItem,
+  });
+
+  console.log(groupedConfiguredItem, configuredItem);
 
   //TBD, state to keep error status (only TRUE/FALSE for now) upon submission for review (evaluateRules endpoint)
   const [submittedError, setSubmittedError] = useState(false);
@@ -224,7 +231,6 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
     }
   };
 
-  console.log(productCandidate, itemSpec);
   return (
     <>
       <Box w="90%" mx="auto" pt={8}>

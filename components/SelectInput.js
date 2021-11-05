@@ -39,7 +39,7 @@ const SelectInput = ({
         onClick={() => setTouched(true)}
         name={name}
       >
-        {!options && (
+        {options && (
           <option value={defaultValue || ""}>
             {defaultValue || "-- Make a selection --"}
           </option>

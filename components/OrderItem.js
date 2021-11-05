@@ -155,7 +155,10 @@ export default function OrderItem({ order, cancelOrder, submitOrder }) {
                           <Button
                             colorScheme="green"
                             onClick={() => {
-                              cancelOrder(order.id);
+                              submitOrder(
+                                order.id,
+                                order.order.created.timestamp
+                              );
                               onClose();
                             }}
                           >
