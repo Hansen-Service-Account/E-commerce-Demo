@@ -56,7 +56,7 @@ const EntityConfig = ({
     );
 
   return (
-    <Box w="100%" ml="auto">
+    <Box w="100%" ml="auto" py={2}>
       <Flex
         textAlign="left"
         justifyContent="space-between"
@@ -122,26 +122,17 @@ const EntityConfig = ({
           )
         }
       >
-        {currentEntity.currency && parentEntity && (
+        {parentEntity && currentEntity.maxOccurs > 1 && matchingEntity && (
           <>
             <Text py={2}>Quantity</Text>
             <NumberInput
               step={1}
               defaultValue={0}
-              value={
-                parentEntity.ChildEntity.find(
-                  (ce) => ce.EntityID === currentEntity.entityId
-                ).UnitQuantity
-              }
+              value={matchingEntity.entityQuantity}
               min={0}
               max={currentEntity.maxOccurs}
               onChange={(value) => {
-                const result = handleNumChange(
-                  value,
-                  parentEntity.ChildEntity.find(
-                    (ce) => ce.EntityID === currentEntity.entityId
-                  )
-                );
+                const result = handleNumChange(value, matchingEntity);
                 setState({ ...result });
               }}
             >

@@ -14,6 +14,7 @@ import fetcher from "../utils/fetchJson";
 import ErrorToast from "./ErrorToast";
 import { filterUnsupportedProperty } from "../utils/filterProperty";
 import { groupSameEntities } from "../utils/groupSameEntities";
+import { expandSameEntities } from "../utils/expandSameEntities";
 
 const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
   const [errors, setErrors] = useState([]);
@@ -48,7 +49,7 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
   const [submittedError, setSubmittedError] = useState(false);
 
   const handleNumChange = (value, parentEntity) => {
-    parentEntity.UnitQuantity = value;
+    parentEntity.entityQuantity = value;
     return configuredItem;
   };
 
@@ -172,6 +173,7 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
         ConfiguredValue: [],
         LinkedEntity: [],
         ChildEntity: [],
+        entityQuantity: 1,
       };
       parentEntity.ChildEntity.push(obj);
     }
@@ -187,11 +189,29 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
   */
   const handleReview = async (quoteId, itemId, item) => {
     try {
+      let expanded = JSON.parse(JSON.stringify(item.productCandidate));
+      expanded = expandSameEntities(expanded);
+      const ruleRes = await fetcher(
+        `${HANSEN_CPQ_V2_BASE_URL}/configuration/candidateConfiguration/evaluateRules`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            productCandidate: expanded,
+            metaDataLookup: {
+              hasBeenSavedInClient: true,
+              fromPortfolioItem: false,
+            },
+            configuration: { id: quoteId, itemId },
+          }),
+          headers: { Accept: "application/json" },
+        }
+      );
+      console.log(ruleRes);
       const res = await fetcher(
         `${HANSEN_CPQ_V2_BASE_URL}/validation/evaluateCompatibility/?quoteId=${quoteId}&quoteItemId=${itemId}`,
         {
           method: "POST",
-          body: JSON.stringify(item.productCandidate),
+          body: JSON.stringify(expanded),
           headers: { "Content-Type": "application/json" },
         }
       );
@@ -209,8 +229,10 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
   */
   const handleUpdate = async (quoteId, itemId, item) => {
     try {
-      const cleanedUpItem = { ...item };
-      filterUnsupportedProperty(item.productCandidate);
+      console.log(item);
+      const cleanedUpItem = JSON.parse(JSON.stringify({ ...item }));
+
+      filterUnsupportedProperty(cleanedUpItem.productCandidate);
       const res = await fetcher(
         `${HANSEN_CPQ_V2_BASE_URL}/quotes/${quoteId}/items/${itemId}?include=candidate`,
         {
@@ -231,6 +253,7 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
     }
   };
 
+  console.log(configuredItem);
   return (
     <>
       <Box w="90%" mx="auto" pt={8}>
@@ -336,7 +359,9 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
                   setSubmittedError(false);
                   const updatedItem = {
                     ...item,
-                    productCandidate: submissionResult.productCandidate,
+                    productCandidate: {
+                      ...submissionResult.productCandidate,
+                    },
                   };
                   await handleUpdate(quoteId, item.id, updatedItem);
                 }
