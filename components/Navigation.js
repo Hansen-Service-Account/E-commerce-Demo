@@ -12,6 +12,7 @@ import {
   MenuList,
   MenuDivider,
   useMediaQuery,
+  useToast,
 } from "@chakra-ui/react";
 import { HamburgerIcon } from "@chakra-ui/icons";
 import UserButton from "./UserButton";
@@ -21,8 +22,19 @@ import React from "react";
 
 const Navigation = ({ isLargerThan1024, username }) => {
   const { productLines, isLoading, isError } = useProductLines();
-  if (!isLoading) {
-    console.log(productLines);
+  const toast = useToast();
+  if (!productLines && !isLoading) {
+    if (!toast.isActive("catalog-error-toast")) {
+      toast({
+        id: "catalog-error-toast",
+        title: "Error Retrieving Product Catalog.",
+        description:
+          "We are not able to retrieve the product catalog from the server at this moment. Please contact IT admin if this error persists.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   }
   return (
     <>

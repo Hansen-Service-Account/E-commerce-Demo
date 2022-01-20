@@ -9,11 +9,14 @@ import {
 } from "../../utils/constants";
 
 export default withSession(async (req, res) => {
+  let retrievedUserInfo;
   try {
     await dbConnect();
+
     const user = await User.findOne({ email: req.body.email });
+
     if (!user) {
-      return res.json({
+      return res.status(401).json({
         error: {
           field: "email",
           message: "User with provided email does not exist",
@@ -26,6 +29,11 @@ export default withSession(async (req, res) => {
         error: { field: "password", message: "The password is incorrect" },
       });
     }
+    req.session.set("userId", user._id);
+    const { _doc } = user;
+    const { password, ...userInfo } = _doc;
+    retrievedUserInfo = userInfo;
+    await req.session.save();
     if (!req.session.get("quoteId")) {
       const result = await fetch(`${HANSEN_CPQ_V2_BASE_URL}/quotes`, {
         method: "POST",
@@ -36,20 +44,22 @@ export default withSession(async (req, res) => {
           items: [],
         }),
       });
+
       const newQuote = await result.json();
       req.session.set("quoteId", newQuote.id);
+      await req.session.save();
     }
 
-    req.session.set("userId", user._id);
-
-    await req.session.save();
-
-    const { _doc } = user;
-    const { password, ...userInfo } = _doc;
     res.status(200).json({ isLoggedIn: true, userInfo });
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: { field: "server", message: error.message } });
+    if (error.type === "invalid-json") {
+      return res.status(500).json({
+        user: { isLoggedIn: true, userInfo: retrievedUserInfo },
+        error: { field: "server", message: error.message, body: error },
+      });
+    }
+    return res.status(500).json({
+      error: { field: "server", message: error.message, body: error },
+    });
   }
 });

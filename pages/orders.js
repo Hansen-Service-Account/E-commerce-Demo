@@ -20,7 +20,6 @@ import fetch from "../utils/fetchJson";
 
 export default function orderPage({ username, customerRef }) {
   const { orders, isLoading, isError, mutateOrders } = useOrders(customerRef);
-  console.log(orders);
   if (orders) {
     orders.orderSummaries.sort(
       (a, b) =>

@@ -56,6 +56,15 @@ export const getServerSideProps = withSession(async function ({ req, res }) {
     //   },
     // };
   }
+  if (!quoteId) {
+    return {
+      props: {
+        homePageEntry,
+        username: user.firstName,
+        initialLogoSrc,
+      },
+    };
+  }
 
   return {
     props: {

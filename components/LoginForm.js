@@ -25,26 +25,64 @@ export default function LoginForm() {
           return errors;
         }}
         onSubmit={async (values, { setErrors }) => {
-          const data = await fetchJson("/api/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(values),
-          });
-          if (data.error) {
-            const errorMap = {};
-            errorMap[data.error.field] = data.error.message;
-            setErrors(errorMap);
-          } else {
-            toast({
-              title: `Welcome back, ${data.userInfo.firstName} ${data.userInfo.lastName}`,
-              description: "Redirecting you back to home page",
-              status: "success",
-              position: "top",
+          try {
+            const data = await fetchJson("/api/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(values),
+            });
+            if (data.error) {
+              const errorMap = {};
+              errorMap[data.error.field] = data.error.message;
+              setErrors(errorMap);
+              if (data.user) {
+                toast({
+                  title: `Welcome back, ${data.userInfo.firstName} ${data.userInfo.lastName}`,
+                  description:
+                    "You have successfully logged in, but we cannot create or retrieve a quote for you at the moment. Redirecting you back to home page.",
+                  status: "warning",
+                  position: "top",
+                  duration: 3000,
+                  isClosable: true,
+                  onCloseComplete: () => {
+                    router.push("/");
+                  },
+                });
+              }
+            } else {
+              toast({
+                title: `Welcome back, ${data.userInfo.firstName} ${data.userInfo.lastName}`,
+                description: "Redirecting you back to home page",
+                status: "success",
+                position: "top",
+                duration: 3000,
+                isClosable: true,
+                onCloseComplete: () => {
+                  router.push("/");
+                },
+              });
+            }
+          } catch (error) {
+            if (error.data.user.isLoggedIn) {
+              return toast({
+                title: `Welcome back, ${error.data.user.userInfo.firstName} ${error.data.user.userInfo.lastName}`,
+                description:
+                  "You have successfully logged in, but we cannot create or retrieve a quote for you at the moment. Redirecting you back to home page.",
+                status: "warning",
+                position: "top",
+                duration: 3000,
+                isClosable: true,
+                onCloseComplete: () => {
+                  router.push("/");
+                },
+              });
+            }
+            return toast({
+              title: "Error logging in.",
+              description: "We are not able to log you in.",
+              status: "error",
               duration: 3000,
               isClosable: true,
-              onCloseComplete: () => {
-                router.push("/");
-              },
             });
           }
         }}

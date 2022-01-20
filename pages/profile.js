@@ -55,7 +55,6 @@ export const getServerSideProps = withSession(async function ({ req }) {
     };
   }
   const { password, ...userInfo } = user._doc;
-  console.log(userInfo);
 
   return {
     props: {

@@ -35,11 +35,28 @@ import { useToast } from "@chakra-ui/toast";
 import ErrorToast from "./ErrorToast";
 
 const QuoteCart = ({ quoteId, adding }) => {
+  const toast = useToast();
   if (!quoteId) {
+    toast({
+      render: ({ id, onClose }) => (
+        <ErrorToast
+          error={{
+            data: {
+              responseCode: "CPQ Server Error",
+              httpStatus: 500,
+              responseText:
+                "Failed to create or retrieve a quote from CPQ server. You can only browse products at the moment.",
+            },
+          }}
+          onClose={onClose}
+        />
+      ),
+      duration: 5000,
+      isClosable: true,
+      position: "top",
+    });
     return null;
   }
-
-  const toast = useToast();
   const { quote, mutateQuote, isLoading, isError } = useQuote(quoteId);
   if (isError) {
     toast({

@@ -1,5 +1,6 @@
 export default async function fetcher(...args) {
   try {
+    console.log(...args);
     const response = await fetch(...args);
     const data = await response.json();
 
@@ -13,7 +14,7 @@ export default async function fetcher(...args) {
     throw error;
   } catch (error) {
     if (!error.data) {
-      error.data = { message: error.message };
+      error.data = { error };
     }
     throw error;
   }
