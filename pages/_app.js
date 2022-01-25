@@ -3,10 +3,9 @@ import { theme } from "../utils/colorScheme";
 import { useRouter } from "next/router";
 
 function MyApp({ Component, pageProps }) {
-  const router = useRouter();
   return (
     <ChakraProvider theme={theme} resetCSS>
-      <Component {...pageProps} key={router.asPath} />
+      <Component {...pageProps} />
     </ChakraProvider>
   );
 }

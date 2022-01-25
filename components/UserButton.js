@@ -6,7 +6,11 @@ import useUser from "../utils/useUser";
 import fetchJson from "../utils/fetchJson";
 import NextLink from "next/link";
 
-export default function UserButton({ isLargerThan1024, username }) {
+export default function UserButton({
+  username,
+  buttonBgColor,
+  buttonTextColor,
+}) {
   const router = useRouter();
   const handleLogin = () => {
     router.push("/login");
@@ -16,14 +20,15 @@ export default function UserButton({ isLargerThan1024, username }) {
     await fetchJson("/api/logout", { method: "POST" });
     router.push("/");
   };
+  console.log(buttonBgColor);
   return (
     <>
       {username ? (
         <Menu>
           <MenuButton
-            mx={isLargerThan1024 || isServer() ? 8 : 2}
-            bg="#e32525"
-            color="white"
+            mx={{ base: 2, lg: 8 }}
+            bg={buttonBgColor || "#e32525"}
+            color={buttonTextColor || "white"}
             textTransform="uppercase"
             fontSize={{ base: "10px", sm: "16px" }}
             as={Button}
@@ -46,9 +51,9 @@ export default function UserButton({ isLargerThan1024, username }) {
         </Menu>
       ) : router.pathname === "/login" ? null : (
         <Button
-          mx={isLargerThan1024 || isServer() ? 8 : 2}
-          bg="#e32525"
-          color="white"
+          mx={{ base: 2, lg: 8 }}
+          bg={buttonBgColor || "#e32525"}
+          color={buttonTextColor || "white"}
           _hover={{ bg: "black" }}
           _active={{ bg: "black" }}
           onClick={handleLogin}

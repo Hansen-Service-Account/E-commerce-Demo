@@ -1,6 +1,5 @@
 export default async function fetcher(...args) {
   try {
-    console.log(...args);
     const response = await fetch(...args);
     const data = await response.json();
 

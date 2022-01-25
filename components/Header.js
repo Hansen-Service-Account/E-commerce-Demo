@@ -1,41 +1,33 @@
-import { Flex } from "@chakra-ui/layout";
+import { Flex, Link } from "@chakra-ui/layout";
 import Navigation from "./Navigation";
-import { HANSEN_RED, HOME_PAGE_ID } from "../utils/constants";
-import { useMediaQuery } from "@chakra-ui/media-query";
-import { isServer } from "../utils/isServer";
-import { Image } from "@chakra-ui/react";
-import NextLink from "next/link";
-import { useEffect, useState } from "react";
-import { getHomePageImageSections } from "../utils/contentful";
+import { HANSEN_RED } from "../utils/constants";
+import Image from "next/image";
 
-const Header = ({ username, initialLogoSrc }) => {
-  const [isLargerThan800] = useMediaQuery("(min-width:800px)");
-  const [isLargerThan1024] = useMediaQuery("(min-width:1024px)");
-  const [logoURL, setLogoURL] = useState("");
-  useEffect(async () => {
-    const { fields } = await getHomePageImageSections(HOME_PAGE_ID);
-    setLogoURL(fields.siteLogo.fields.file.url);
-  }, [HOME_PAGE_ID]);
+const Header = ({ username, initialLogoSrc, productLines, headerNav }) => {
   return (
     <Flex
       direction="row"
       align="center"
       justify="space-around"
-      bg="transparent"
+      bg={headerNav.fields.backgroundColor || "transparent"}
       w="100%"
-      p={isLargerThan800 || isServer() ? 4 : 0}
+      p={{ base: 0, lg: 4 }}
       color="black"
-      borderBottom={`${HANSEN_RED} 2px solid`}
+      borderBottom={`${headerNav.fields.borderColor || HANSEN_RED} 2px solid`}
     >
-      <NextLink href="/">
+      <Link href="/">
         <Image
-          src={logoURL}
-          width={isLargerThan800 || isServer() ? "300" : "200"}
-          height={isLargerThan800 || isServer() ? "150" : "100"}
+          src={`https:${initialLogoSrc}`}
+          width="300px"
+          height="150px"
           cursor="pointer"
         />
-      </NextLink>
-      <Navigation isLargerThan1024={isLargerThan1024} username={username} />
+      </Link>
+      <Navigation
+        productLines={productLines}
+        username={username}
+        headerNav={headerNav}
+      />
     </Flex>
   );
 };

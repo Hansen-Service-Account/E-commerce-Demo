@@ -1,76 +1,118 @@
-import Hero from "../components/Hero";
 import Header from "../components/Header";
-import { getHomePageImageSections } from "../utils/contentful";
+import {
+  getHeaderAndFooterNavigationOfWebsite,
+  getPageSectionsOfWebPage,
+} from "../utils/contentful";
 import Footer from "../components/Footer";
 import { dbConnect } from "../middleware/db";
 import withSession from "../middleware/session";
 import User from "../models/user";
-import useQuote from "../hooks/useQuote";
 import QuoteCart from "../components/QuoteCart";
+import { HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
+import { sections } from "../sections/sections.config";
 
 export default function homePage({
-  homePageEntry,
+  webPage,
+  pageSections,
+  imageAssets,
+  headerNav,
+  footerNav,
+  headerLogo,
+  footerLogo,
+  productLines,
   username,
-  initialLogoSrc,
   quoteId,
 }) {
-  const { firstSection, secondSection, thirdSection, fourthSection } =
-    homePageEntry.fields;
-  const homePageImageSections = [
-    { imageURL: firstSection.fields.file.url, alt: firstSection.fields.title },
-    {
-      imageURL: secondSection.fields.file.url,
-      alt: secondSection.fields.title,
-    },
-    { imageURL: thirdSection.fields.file.url, alt: thirdSection.fields.title },
-    {
-      imageURL: fourthSection.fields.file.url,
-      alt: fourthSection.fields.title,
-    },
-  ];
-
   return (
     <>
-      <Header username={username} initialLogoSrc={initialLogoSrc} />
-      <Hero homePageImageSections={homePageImageSections} />
+      <Header
+        username={username}
+        initialLogoSrc={headerLogo.fields.file.url}
+        productLines={productLines}
+        headerNav={headerNav.items[0]}
+      />
+      {webPage.items[0].fields.pageSections.map(
+        (ps) =>
+          sections[ps.fields.designedSection] &&
+          ps.sys.contentType.sys.id === "pageSection" &&
+          sections[ps.fields.designedSection]({
+            pageSection: ps,
+            key: ps.sys.id,
+          })
+      )}
       {username ? <QuoteCart quoteId={quoteId} /> : null}
-      <Footer />
+      <Footer
+        logoURL={footerLogo.fields.file.url}
+        footerNav={footerNav.items[0]}
+      />
     </>
   );
 }
 
-export const getServerSideProps = withSession(async function ({ req, res }) {
-  const homePageEntry = await getHomePageImageSections();
+export const getServerSideProps = withSession(async function ({ req }) {
+  let productLines;
+  const { webPage, pageSections, imageAssets } = await getPageSectionsOfWebPage(
+    "Home"
+  );
+  const { headerNav, footerNav, headerLogo, footerLogo } =
+    await getHeaderAndFooterNavigationOfWebsite(
+      process.env.CONTENTFUL_WEBSITE_ID
+    );
+
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
-  const initialLogoSrc = "https://via.placeholder.com/300x150";
+  const productLinesRes = await fetch(
+    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+  );
+  if (productLinesRes.status > 400) {
+    productLines = [];
+  } else {
+    productLines = await productLinesRes.json();
+  }
+
   if (!user) {
     return {
-      props: { homePageEntry, initialLogoSrc },
+      props: {
+        webPage,
+        pageSections,
+        imageAssets,
+        headerNav,
+        footerNav,
+        headerLogo,
+        footerLogo,
+        productLines,
+      },
     };
-    // return {
-    //   redirect: {
-    //     destination: "/login",
-    //     permanent: false,
-    //   },
-    // };
   }
+
   if (!quoteId) {
     return {
       props: {
-        homePageEntry,
+        webPage,
+        pageSections,
+        imageAssets,
+        headerNav,
+        footerNav,
+        headerLogo,
+        footerLogo,
+        productLines,
         username: user.firstName,
-        initialLogoSrc,
       },
     };
   }
 
   return {
     props: {
-      homePageEntry,
+      webPage,
+      pageSections,
+      imageAssets,
+      headerNav,
+      footerNav,
+      headerLogo,
+      footerLogo,
+      productLines,
       username: user.firstName,
-      initialLogoSrc,
       quoteId,
     },
   };
