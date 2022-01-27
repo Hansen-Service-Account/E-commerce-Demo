@@ -1,51 +1,27 @@
-import Header from "../../components/Header";
-import fetch from "node-fetch";
+import Header from "../components/Header";
+import { HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
+import withSession from "../middleware/session";
+import { dbConnect } from "../middleware/db";
+import User from "../models/user";
 import {
-  BUSINESS_SUB_CATEGORIES,
-  DARK_GOLD,
-  HANSEN_CPQ_V2_BASE_URL,
-  MOBILE_PRODUCTS_ENDPOINT,
-  RESIDENTIAL_SUB_CATEGORIES,
-} from "../../utils/constants";
-import withSession from "../../middleware/session";
-import { dbConnect } from "../../middleware/db";
-import User from "../../models/user";
-
-import Hero from "../../components/Hero";
-import CategorySelection from "../../components/CategorySelection";
-import Footer from "../../components/Footer";
-import { Center, Heading, Box } from "@chakra-ui/layout";
-import QuoteCart from "../../components/QuoteCart";
-import fetcher from "../../utils/nodeFetchJson";
-import Error from "next/error";
-import { useRouter } from "next/router";
-import {
-  getHeaderAndFooterNavigationOfWebsite,
   getPageSectionsOfWebPage,
-} from "../../utils/contentful";
+  getHeaderAndFooterNavigationOfWebsite,
+} from "../utils/contentful";
+import Footer from "../components/Footer";
+import QuoteCart from "../components/QuoteCart";
+import { sections } from "../sections/sections.config";
+import fetch from "node-fetch";
 
-export default function productLines({
+export default function residentialProducts({
   username,
+  quoteId,
+  webPage,
   headerNav,
   footerNav,
   headerLogo,
   footerLogo,
   productLines,
-  quoteId,
 }) {
-  // if (status) {
-  //   return (
-  //     <>
-  //       <Header username={username} />
-  //       <Center height="70vh" overflow="hidden">
-  //         <Error statusCode={status} title={errorMessage} />
-  //       </Center>
-  //       <QuoteCart quoteId={quoteId} />
-  //       <Footer />
-  //     </>
-  //   );
-  // }
-
   return (
     <>
       <Header
@@ -54,16 +30,16 @@ export default function productLines({
         productLines={productLines}
         headerNav={headerNav.items[0]}
       />
-      <Box py={24}>
-        <Heading as="h2" size="lg" textAlign="center" textTransform="uppercase">
-          Our product lines
-        </Heading>
-        <CategorySelection
-          categories={productLines}
-          urlPrefix="/product-lines"
-        />
-        {username ? <QuoteCart quoteId={quoteId} /> : null}
-      </Box>
+      {webPage.items[0].fields.pageSections.map(
+        (ps) =>
+          sections[ps.fields.designedSection] &&
+          ps.sys.contentType.sys.id === "pageSection" &&
+          sections[ps.fields.designedSection]({
+            pageSection: ps,
+            key: ps.sys.id,
+          })
+      )}
+      {username && <QuoteCart quoteId={quoteId} />}
       <Footer
         logoURL={footerLogo.fields.file.url}
         footerNav={footerNav.items[0]}
@@ -74,10 +50,14 @@ export default function productLines({
 
 export const getServerSideProps = withSession(async function ({ req }) {
   let productLines;
+  const { webPage, pageSections, imageAssets } = await getPageSectionsOfWebPage(
+    "Residential Products"
+  );
   const { headerNav, footerNav, headerLogo, footerLogo } =
     await getHeaderAndFooterNavigationOfWebsite(
       process.env.CONTENTFUL_WEBSITE_ID
     );
+
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
@@ -93,6 +73,9 @@ export const getServerSideProps = withSession(async function ({ req }) {
   if (!user) {
     return {
       props: {
+        webPage,
+        pageSections,
+        imageAssets,
         headerNav,
         footerNav,
         headerLogo,
@@ -105,6 +88,9 @@ export const getServerSideProps = withSession(async function ({ req }) {
   if (!quoteId) {
     return {
       props: {
+        webPage,
+        pageSections,
+        imageAssets,
         headerNav,
         footerNav,
         headerLogo,
@@ -117,6 +103,9 @@ export const getServerSideProps = withSession(async function ({ req }) {
 
   return {
     props: {
+      webPage,
+      pageSections,
+      imageAssets,
       headerNav,
       footerNav,
       headerLogo,

@@ -13,8 +13,6 @@ import { sections } from "../sections/sections.config";
 
 export default function homePage({
   webPage,
-  pageSections,
-  imageAssets,
   headerNav,
   footerNav,
   headerLogo,

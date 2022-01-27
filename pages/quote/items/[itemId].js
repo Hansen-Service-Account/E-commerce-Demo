@@ -13,29 +13,43 @@ import Error from "next/error";
 import fetcher from "../../../utils/nodeFetchJson";
 import { DARK_GOLD, HANSEN_CPQ_V2_BASE_URL } from "../../../utils/constants";
 import QuoteItem from "../../../components/QuoteItem";
-import fetch from "../../../utils/fetchJson";
 import { renderItem } from "../../../utils/renderItem";
+import {
+  getHeaderAndFooterNavigationOfWebsite,
+  getPageSectionsOfWebPage,
+} from "../../../utils/contentful";
 
-export default function itemId({ quoteId, itemId, username }) {
+export default function itemId({
+  headerNav,
+  footerNav,
+  headerLogo,
+  footerLogo,
+  productLines,
+  quoteId,
+  itemId,
+  username,
+}) {
   const { item, isLoading, isError } = useItem(quoteId, itemId);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [itemSpec, setItemSpec] = useState({});
   useEffect(async () => {
     try {
-      const result = await fetch(
-        `${HANSEN_CPQ_V2_BASE_URL}/configuration/candidateconfiguration?include=compiledSpecification`,
-        {
-          method: "POST",
-          headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            configuration: { id: quoteId, itemId: itemId },
-          }),
-        }
-      );
+      const result = await (
+        await fetch(
+          `${HANSEN_CPQ_V2_BASE_URL}/configuration/candidateconfiguration?include=compiledSpecification`,
+          {
+            method: "POST",
+            headers: {
+              accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              configuration: { id: quoteId, itemId: itemId },
+            }),
+          }
+        )
+      ).json();
       setItemSpec({ ...result });
       setLoading(false);
     } catch (error) {
@@ -60,7 +74,12 @@ export default function itemId({ quoteId, itemId, username }) {
 
   return (
     <>
-      <Header username={username} />
+      <Header
+        username={username}
+        initialLogoSrc={headerLogo.fields.file.url}
+        productLines={productLines}
+        headerNav={headerNav.items[0]}
+      />
       {loading ? (
         <Flex h="70vh" justify="center" align="center" direction="column">
           <Spinner
@@ -75,16 +94,21 @@ export default function itemId({ quoteId, itemId, username }) {
           </Heading>
         </Flex>
       ) : (
-        <ItemConfig
-          item={item}
-          quoteId={quoteId}
-          setAdding={setAdding}
-          adding={adding}
-          itemSpec={itemSpec}
-        />
+        <Box py={24}>
+          <ItemConfig
+            item={item}
+            quoteId={quoteId}
+            setAdding={setAdding}
+            adding={adding}
+            itemSpec={itemSpec}
+          />
+        </Box>
       )}
       <QuoteCart quoteId={quoteId} adding={adding} />
-      <Footer />
+      <Footer
+        logoURL={footerLogo.fields.file.url}
+        footerNav={footerNav.items[0]}
+      />
     </>
   );
 }
@@ -94,10 +118,23 @@ export const getServerSideProps = withSession(async function ({
   res,
   params,
 }) {
+  let productLines;
+  const { headerNav, footerNav, headerLogo, footerLogo } =
+    await getHeaderAndFooterNavigationOfWebsite(
+      process.env.CONTENTFUL_WEBSITE_ID
+    );
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
   const itemId = params.itemId;
+  const productLinesRes = await fetch(
+    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+  );
+  if (productLinesRes.status > 400) {
+    productLines = [];
+  } else {
+    productLines = await productLinesRes.json();
+  }
 
   if (!user) {
     return {
@@ -108,8 +145,26 @@ export const getServerSideProps = withSession(async function ({
     };
   }
 
+  if (!quoteId) {
+    return {
+      props: {
+        headerNav,
+        footerNav,
+        headerLogo,
+        footerLogo,
+        productLines,
+        username: user.firstName,
+      },
+    };
+  }
+
   return {
     props: {
+      headerNav,
+      footerNav,
+      headerLogo,
+      footerLogo,
+      productLines,
       quoteId,
       itemId,
       username: user.firstName,

@@ -24,9 +24,20 @@ import {
   FaTwitterSquare,
   FaYoutubeSquare,
 } from "react-icons/fa";
-import { DARK_GOLD } from "../utils/constants";
+import { DARK_GOLD, HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
+import {
+  getHeaderAndFooterNavigationOfWebsite,
+  getPageSectionsOfWebPage,
+} from "../utils/contentful";
 
-export default function contactPage({ username }) {
+export default function contactPage({
+  headerNav,
+  footerNav,
+  headerLogo,
+  footerLogo,
+  productLines,
+  username,
+}) {
   const containerStyle = {
     width: "100%",
     height: "400px",
@@ -39,13 +50,18 @@ export default function contactPage({ username }) {
 
   return (
     <>
-      <Header username={username} />
+      <Header
+        initialLogoSrc={headerLogo.fields.file.url}
+        productLines={productLines}
+        headerNav={headerNav.items[0]}
+        username={username}
+      />
       <Flex
         w={{ base: "90%", md: "80%" }}
         mx="auto"
         justify="center"
         direction={{ base: "column", md: "row" }}
-        mt={12}
+        py={24}
       >
         <Flex
           direction="column"
@@ -129,23 +145,68 @@ export default function contactPage({ username }) {
           </LoadScript>
         </Box>
       </Flex>
-      <Footer />
+      <Footer
+        logoURL={footerLogo.fields.file.url}
+        footerNav={footerNav.items[0]}
+      />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req }) {
+  let productLines;
+
+  const { headerNav, footerNav, headerLogo, footerLogo } =
+    await getHeaderAndFooterNavigationOfWebsite(
+      process.env.CONTENTFUL_WEBSITE_ID
+    );
+
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
+  const quoteId = req.session.get("quoteId");
+  const productLinesRes = await fetch(
+    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+  );
+  if (productLinesRes.status > 400) {
+    productLines = [];
+  } else {
+    productLines = await productLinesRes.json();
+  }
+
   if (!user) {
     return {
-      props: {},
+      props: {
+        headerNav,
+        footerNav,
+        headerLogo,
+        footerLogo,
+        productLines,
+      },
+    };
+  }
+
+  if (!quoteId) {
+    return {
+      props: {
+        headerNav,
+        footerNav,
+        headerLogo,
+        footerLogo,
+        productLines,
+        username: user.firstName,
+      },
     };
   }
 
   return {
     props: {
+      headerNav,
+      footerNav,
+      headerLogo,
+      footerLogo,
+      productLines,
       username: user.firstName,
+      quoteId,
     },
   };
 });

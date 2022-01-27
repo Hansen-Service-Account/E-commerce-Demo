@@ -45,7 +45,20 @@ export const HighlightProductsSection = ({ pageSection }) => {
             {pageSection.fields.subHeading}
           </Text>
         )}
-        {pageSection.fields.ctaButtonText && (
+        {pageSection.fields.ctaButtonVariant === "Outline" ? (
+          <Button
+            variant="outline"
+            borderColor={pageSection.fields.ctaButtonBgColor || "teal"}
+            borderWidth="2px"
+            color={pageSection.fields.ctaButtonTextColor || "black"}
+            _hover={{
+              bgColor: pageSection.fields.ctaButtonBgColor || "teal",
+              color: "white",
+            }}
+          >
+            {pageSection.fields.ctaButtonText}
+          </Button>
+        ) : (
           <Button
             bgColor={pageSection.fields.ctaButtonBgColor || "teal"}
             color={pageSection.fields.ctaButtonTextColor || "white"}
@@ -90,13 +103,29 @@ export const HighlightProductsSection = ({ pageSection }) => {
             <Text as="p" fontSize="1.2rem">
               {ac.fields.description}
             </Text>
-            <Button
-              bgColor={ac.fields.ctaButtonBgColor || "teal"}
-              color={ac.fields.ctaButtonTextColor || "white"}
-              fontSize="1.2rem"
-            >
-              {ac.fields.ctaButtonText}
-            </Button>
+            {ac.fields.ctaButtonVariant === "Outline" ? (
+              <Button
+                variant="outline"
+                borderColor={ac.fields.ctaButtonBgColor || "teal"}
+                fontSize="1.2rem"
+                borderWidth="2px"
+                color={ac.fields.ctaButtonTextColor || "teal"}
+                _hover={{
+                  bgColor: ac.fields.ctaButtonBgColor || "teal",
+                  color: "white",
+                }}
+              >
+                {ac.fields.ctaButtonText}
+              </Button>
+            ) : (
+              <Button
+                bgColor={ac.fields.ctaButtonBgColor || "teal"}
+                color={ac.fields.ctaButtonTextColor || "white"}
+                fontSize="1.2rem"
+              >
+                {ac.fields.ctaButtonText}
+              </Button>
+            )}
           </Flex>
         ))}
       </Flex>

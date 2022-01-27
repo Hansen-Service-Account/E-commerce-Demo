@@ -20,11 +20,20 @@ import {
 import { Alert, AlertIcon } from "@chakra-ui/alert";
 import Payment from "../components/Payment";
 import { useState } from "react";
-import fetch from "../utils/fetchJson";
+import fetchJson from "../utils/fetchJson";
 import { useRouter } from "next/router";
 import { mutate } from "swr";
+import {
+  getHeaderAndFooterNavigationOfWebsite,
+  getPageSectionsOfWebPage,
+} from "../utils/contentful";
 
 export default function checkout({
+  headerNav,
+  footerNav,
+  headerLogo,
+  footerLogo,
+  productLines,
   username,
   quoteId,
   customerType,
@@ -48,15 +57,23 @@ export default function checkout({
   if (quote && quote.items.length === 0) {
     return (
       <>
-        <Header username={username} />
-        <Box h="30vh" w="80%" mt={12} mx="auto">
+        <Header
+          username={username}
+          initialLogoSrc={headerLogo.fields.file.url}
+          headerNav={headerNav.items[0]}
+          productLines={productLines}
+        />
+        <Box h="30vh" w="80%" mt={12} mx="auto" py={24}>
           <Alert status="warning">
             <AlertIcon />
             Seems your cart is currently empty, please add items and validate
             before making a payment.
           </Alert>
         </Box>
-        <Footer />
+        <Footer
+          logoURL={footerLogo.fields.file.url}
+          footerNav={footerNav.items[0]}
+        />
       </>
     );
   }
@@ -64,7 +81,7 @@ export default function checkout({
   const checkout = async (quoteId) => {
     setSubmitting(true);
     try {
-      const result = await fetch("/api/checkout", {
+      const result = await fetchJson("/api/checkout", {
         method: "POST",
         body: JSON.stringify({
           quoteId,
@@ -100,9 +117,20 @@ export default function checkout({
 
   return (
     <>
-      <Header username={username} />
+      <Header
+        username={username}
+        initialLogoSrc={headerLogo.fields.file.url}
+        headerNav={headerNav.items[0]}
+        productLines={productLines}
+      />
       {isLoading && (
-        <Flex h="70vh" justify="center" align="center" direction="column">
+        <Flex
+          h="70vh"
+          justify="center"
+          align="center"
+          direction="column"
+          py={24}
+        >
           <Spinner
             thickness="4px"
             speed="0.65s"
@@ -117,7 +145,7 @@ export default function checkout({
       )}
 
       {quote && (
-        <Box w={{ base: "95%", md: "90%" }} mx="auto" pt={8}>
+        <Box w={{ base: "95%", md: "90%" }} mx="auto" py={24}>
           <Flex justify="flex-start" align="center">
             <Heading
               as="h2"
@@ -150,12 +178,30 @@ export default function checkout({
           />
         </Box>
       )}
-      <Footer />
+      <Footer
+        logoURL={footerLogo.fields.file.url}
+        footerNav={footerNav.items[0]}
+      />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req, res }) {
+  let productLines;
+
+  const { headerNav, footerNav, headerLogo, footerLogo } =
+    await getHeaderAndFooterNavigationOfWebsite(
+      process.env.CONTENTFUL_WEBSITE_ID
+    );
+
+  const productLinesRes = await fetch(
+    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+  );
+  if (productLinesRes.status > 400) {
+    productLines = [];
+  } else {
+    productLines = await productLinesRes.json();
+  }
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
@@ -173,6 +219,11 @@ export const getServerSideProps = withSession(async function ({ req, res }) {
 
   return {
     props: {
+      headerNav,
+      footerNav,
+      headerLogo,
+      footerLogo,
+      productLines,
       username: user.firstName,
       customerType: user.customerType,
       customerRef,

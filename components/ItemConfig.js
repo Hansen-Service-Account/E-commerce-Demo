@@ -43,8 +43,6 @@ const ItemConfig = ({ item, quoteId, setAdding, adding, itemSpec }) => {
     ...groupedConfiguredItem,
   });
 
-  console.log(groupedConfiguredItem, configuredItem);
-
   //TBD, state to keep error status (only TRUE/FALSE for now) upon submission for review (evaluateRules endpoint)
   const [submittedError, setSubmittedError] = useState(false);
 

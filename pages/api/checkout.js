@@ -28,7 +28,7 @@ export default withSession(async (req, res) => {
     }
 
     const { quoteId, quoteLastUpdated, activationDate } = req.body;
-    console.log(quoteLastUpdated, activationDate);
+
     const result = await fetch(
       `${HANSEN_CPQ_V2_BASE_URL}/quotes/${quoteId}/convertToOrder`,
       {
@@ -40,6 +40,7 @@ export default withSession(async (req, res) => {
         }),
       }
     );
+    console.log(result);
     req.session.set("orderId", result.orderId);
     const newQuote = await fetch(`${HANSEN_CPQ_V2_BASE_URL}/quotes`, {
       method: "POST",

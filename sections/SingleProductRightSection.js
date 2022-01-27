@@ -66,13 +66,29 @@ export const SingleProductRightSection = ({ pageSection }) => {
               {pageSection.fields.description}
             </Text>
           )}
-          <Button
-            bgColor={pageSection.fields.ctaButtonBgColor || "teal"}
-            color={pageSection.fields.ctaButtonTextColor || "white"}
-            rightIcon={<ArrowRightIcon fontSize="0.8rem" />}
-          >
-            {pageSection.fields.ctaButtonText}
-          </Button>
+          {pageSection.fields.ctaButtonVariant === "Outline" ? (
+            <Button
+              variant="outline"
+              borderColor={pageSection.fields.ctaButtonBgColor || "teal"}
+              borderWidth="2px"
+              color={pageSection.fields.ctaButtonTextColor || "black"}
+              _hover={{
+                bgColor: pageSection.fields.ctaButtonBgColor || "teal",
+                color: "white",
+              }}
+              rightIcon={<ArrowRightIcon fontSize="0.8rem" />}
+            >
+              {pageSection.fields.ctaButtonText}
+            </Button>
+          ) : (
+            <Button
+              bgColor={pageSection.fields.ctaButtonBgColor || "teal"}
+              color={pageSection.fields.ctaButtonTextColor || "white"}
+              rightIcon={<ArrowRightIcon fontSize="0.8rem" />}
+            >
+              {pageSection.fields.ctaButtonText}
+            </Button>
+          )}
         </Flex>
       </Flex>
     </Box>

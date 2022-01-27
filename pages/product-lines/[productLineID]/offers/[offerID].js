@@ -18,26 +18,43 @@ import Error from "next/error";
 import ErrorToast from "../../../../components/ErrorToast";
 import { Alert, AlertIcon } from "@chakra-ui/alert";
 import { useRouter } from "next/router";
+import {
+  getHeaderAndFooterNavigationOfWebsite,
+  getPageSectionsOfWebPage,
+} from "../../../../utils/contentful";
 
 export default function offerID({
+  headerNav,
+  footerNav,
+  headerLogo,
+  footerLogo,
   username,
   products,
   quoteId,
   status,
   errorMessage,
   productLine,
+  productLines,
   offer,
   customerType,
 }) {
   if (status) {
     return (
       <>
-        <Header username={username} />
+        <Header
+          username={username}
+          initialLogoSrc={headerLogo.fields.file.url}
+          productLines={productLines}
+          headerNav={headerNav.items[0]}
+        />
         <Center height="70vh" overflow="hidden">
           <Error statusCode={status} title={errorMessage} />
         </Center>
-        <QuoteCart quoteId={quoteId} />
-        <Footer />
+        {username ? <QuoteCart quoteId={quoteId} /> : null}
+        <Footer
+          logoURL={footerLogo.fields.file.url}
+          footerNav={footerNav.items[0]}
+        />
       </>
     );
   }
@@ -49,7 +66,12 @@ export default function offerID({
   if (!quoteId) {
     return (
       <>
-        <Header username={username} />
+        <Header
+          username={username}
+          initialLogoSrc={headerLogo.fields.file.url}
+          productLines={productLines}
+          headerNav={headerNav.items[0]}
+        />
         <CategorySelection
           categories={productLine.children}
           urlPrefix={`/product-lines/${productLineID}/offers`}
@@ -92,8 +114,11 @@ export default function offerID({
             We are not offer any products for this category at the moment.
           </Alert>
         )}
-        <QuoteCart quoteId={quoteId} />
-        <Footer />
+        {username ? <QuoteCart quoteId={quoteId} /> : null}
+        <Footer
+          logoURL={footerLogo.fields.file.url}
+          footerNav={footerNav.items[0]}
+        />
       </>
     );
   }
@@ -153,7 +178,12 @@ export default function offerID({
   };
   return (
     <>
-      <Header username={username} />
+      <Header
+        username={username}
+        initialLogoSrc={headerLogo.fields.file.url}
+        productLines={productLines}
+        headerNav={headerNav.items[0]}
+      />
       <CategorySelection
         urlPrefix={`/product-lines/${productLineID}/offers`}
         categories={productLine.children}
@@ -191,20 +221,27 @@ export default function offerID({
           We are not offer any products for this category at the moment.
         </Alert>
       )}
-      <QuoteCart quoteId={quoteId} adding={adding} />
-      <Footer />
+      {username && <QuoteCart quoteId={quoteId} adding={adding} />}
+      <Footer
+        logoURL={footerLogo.fields.file.url}
+        footerNav={footerNav.items[0]}
+      />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req, params }) {
+  const { headerNav, footerNav, headerLogo, footerLogo } =
+    await getHeaderAndFooterNavigationOfWebsite(
+      process.env.CONTENTFUL_WEBSITE_ID
+    );
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   try {
-    const classificationresult = await fetcher(
+    const productLines = await fetcher(
       `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
     );
-    const productLine = classificationresult.find(
+    const productLine = productLines.find(
       (r) => r.name === params.productLineID.replace(/-/g, " ")
     );
 
@@ -216,17 +253,31 @@ export const getServerSideProps = withSession(async function ({ req, params }) {
     const products = result[0] || null;
     if (!user) {
       return {
-        props: { products, productLine, offer },
+        props: {
+          headerNav,
+          footerNav,
+          headerLogo,
+          footerLogo,
+          products,
+          productLine,
+          productLines,
+          offer,
+        },
       };
     }
     const quoteId = req.session.get("quoteId");
 
     return {
       props: {
+        headerNav,
+        footerNav,
+        headerLogo,
+        footerLogo,
         products,
         username: user.firstName,
         quoteId,
         productLine,
+        productLines,
         offer,
         customerType: user.customerType,
       },
@@ -235,10 +286,16 @@ export const getServerSideProps = withSession(async function ({ req, params }) {
     console.log(error);
     return {
       props: {
+        headerNav,
+        footerNav,
+        headerLogo,
+        footerLogo,
         status: error.response.status,
         errorMessage: error.data.responseText,
         username: user.firstName,
         quoteId,
+
+        productLines,
       },
     };
   }

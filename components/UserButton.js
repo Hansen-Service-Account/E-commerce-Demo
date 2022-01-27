@@ -20,7 +20,6 @@ export default function UserButton({
     await fetchJson("/api/logout", { method: "POST" });
     router.push("/");
   };
-  console.log(buttonBgColor);
   return (
     <>
       {username ? (

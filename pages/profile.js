@@ -6,13 +6,27 @@ import Footer from "../components/Footer";
 import { Badge, Flex, StackDivider, Text, VStack } from "@chakra-ui/layout";
 import { Avatar } from "@chakra-ui/avatar";
 import { Editable } from "@chakra-ui/editable";
+import { getHeaderAndFooterNavigationOfWebsite } from "../utils/contentful";
+import { HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
 
-export default function profilePage({ user }) {
+export default function profilePage({
+  headerNav,
+  footerNav,
+  headerLogo,
+  footerLogo,
+  productLines,
+  user,
+}) {
   const userInfo = JSON.parse(user);
   return (
     <>
-      <Header username={userInfo.firstName} />
-      <Flex align="center" w="80%" mx="auto" direction="column" my={12}>
+      <Header
+        username={userInfo.firstName}
+        initialLogoSrc={headerLogo.fields.file.url}
+        headerNav={headerNav.items[0]}
+        productLines={productLines}
+      />
+      <Flex align="center" w="80%" mx="auto" direction="column" py={24}>
         <Flex align="center">
           <Avatar
             size="2xl"
@@ -38,12 +52,30 @@ export default function profilePage({ user }) {
           </VStack>
         </Flex>
       </Flex>
-      <Footer />
+      <Footer
+        logoURL={footerLogo.fields.file.url}
+        footerNav={footerNav.items[0]}
+      />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req }) {
+  let productLines;
+
+  const { headerNav, footerNav, headerLogo, footerLogo } =
+    await getHeaderAndFooterNavigationOfWebsite(
+      process.env.CONTENTFUL_WEBSITE_ID
+    );
+
+  const productLinesRes = await fetch(
+    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+  );
+  if (productLinesRes.status > 400) {
+    productLines = [];
+  } else {
+    productLines = await productLinesRes.json();
+  }
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   if (!user) {
@@ -58,6 +90,11 @@ export const getServerSideProps = withSession(async function ({ req }) {
 
   return {
     props: {
+      headerNav,
+      footerNav,
+      headerLogo,
+      footerLogo,
+      productLines,
       user: JSON.stringify(userInfo),
     },
   };

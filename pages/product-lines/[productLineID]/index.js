@@ -3,38 +3,29 @@ import { HANSEN_CPQ_V2_BASE_URL } from "../../../utils/constants";
 import withSession from "../../../middleware/session";
 import { dbConnect } from "../../../middleware/db";
 import User from "../../../models/user";
-import { getHomePageImageSections } from "../../../utils/contentful";
-import Hero from "../../../components/Hero";
 import CategorySelection from "../../../components/CategorySelection";
 import Footer from "../../../components/Footer";
-import { Center, Heading } from "@chakra-ui/layout";
+import { Center, Heading, Box } from "@chakra-ui/layout";
 import QuoteCart from "../../../components/QuoteCart";
 import fetcher from "../../../utils/nodeFetchJson";
 import Error from "next/error";
 import { useRouter } from "next/router";
+import {
+  getHeaderAndFooterNavigationOfWebsite,
+  getPageSectionsOfWebPage,
+} from "../../../utils/contentful";
 
 export default function productLineID({
-  username,
-  homePageEntry,
-  quoteId,
   status,
   errorMessage,
+  username,
+  headerNav,
+  footerNav,
+  headerLogo,
+  footerLogo,
   productLines,
+  quoteId,
 }) {
-  const { firstSection, secondSection, thirdSection, fourthSection } =
-    homePageEntry.fields;
-  const homePageImageSections = [
-    { imageURL: firstSection.fields.file.url, alt: firstSection.fields.title },
-    {
-      imageURL: secondSection.fields.file.url,
-      alt: secondSection.fields.title,
-    },
-    { imageURL: thirdSection.fields.file.url, alt: thirdSection.fields.title },
-    {
-      imageURL: fourthSection.fields.file.url,
-      alt: fourthSection.fields.title,
-    },
-  ];
   const router = useRouter();
   const { productLineID } = router.query;
   const productLine = productLines.find(
@@ -44,43 +35,58 @@ export default function productLineID({
   if (status) {
     return (
       <>
-        <Header username={username} />
+        <Header
+          username={username}
+          initialLogoSrc={headerLogo.fields.file.url}
+          productLines={productLines}
+          headerNav={headerNav.items[0]}
+        />
         <Center height="70vh" overflow="hidden">
           <Error statusCode={status} title={errorMessage} />
         </Center>
-        <QuoteCart quoteId={quoteId} />
-        <Footer />
+        {username ? <QuoteCart quoteId={quoteId} /> : null}
+        <Footer
+          logoURL={footerLogo.fields.file.url}
+          footerNav={footerNav.items[0]}
+        />
       </>
     );
   }
 
   return (
     <>
-      <Header username={username} />
-      <Heading
-        as="h2"
-        size="lg"
-        textAlign="center"
-        textTransform="uppercase"
-        mt={16}
-      >
-        {productLine.name}
-      </Heading>
-      <CategorySelection
-        categories={productLine.children}
-        urlPrefix={`/product-lines/${productLineID}/offers`}
+      <Header
+        username={username}
+        initialLogoSrc={headerLogo.fields.file.url}
+        productLines={productLines}
+        headerNav={headerNav.items[0]}
       />
-      <Hero homePageImageSections={homePageImageSections} />
-      <QuoteCart quoteId={quoteId} />
-      <Footer />
+      <Box py={24}>
+        <Heading as="h2" size="lg" textAlign="center" textTransform="uppercase">
+          {productLine.name}
+        </Heading>
+        <CategorySelection
+          categories={productLine.children}
+          urlPrefix={`/product-lines/${productLineID}/offers`}
+        />
+      </Box>
+      {username ? <QuoteCart quoteId={quoteId} /> : null}
+
+      <Footer
+        logoURL={footerLogo.fields.file.url}
+        footerNav={footerNav.items[0]}
+      />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req }) {
+  const { headerNav, footerNav, headerLogo, footerLogo } =
+    await getHeaderAndFooterNavigationOfWebsite(
+      process.env.CONTENTFUL_WEBSITE_ID
+    );
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
-  const homePageEntry = await getHomePageImageSections();
   const quoteId = req.session.get("quoteId");
   try {
     const productLines = await fetcher(
@@ -93,16 +99,19 @@ export const getServerSideProps = withSession(async function ({ req }) {
 
     if (!user) {
       return {
-        props: { homePageEntry, productLines },
+        props: { headerNav, footerNav, headerLogo, footerLogo, productLines },
       };
     }
 
     return {
       props: {
-        homePageEntry,
+        headerNav,
+        footerNav,
+        headerLogo,
+        footerLogo,
+        productLines,
         username: user.firstName,
         quoteId,
-        productLines,
       },
     };
   } catch (error) {
@@ -110,6 +119,10 @@ export const getServerSideProps = withSession(async function ({ req }) {
       props: {
         status: error.response.status,
         errorMessage: error.data.responseText,
+        headerNav,
+        footerNav,
+        headerLogo,
+        footerLogo,
         username: user.firstName,
         quoteId,
       },

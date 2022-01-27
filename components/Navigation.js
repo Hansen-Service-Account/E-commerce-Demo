@@ -28,6 +28,15 @@ const Navigation = ({ username, productLines, headerNav }) => {
         p={4}
         color="black"
       >
+        <Link href="/business-products" px={4} fontSize="xl">
+          Business
+        </Link>
+        <Link href="/residential-products" px={4} fontSize="xl">
+          Personal
+        </Link>
+        <Link href="/contact" px={4} fontSize="xl">
+          Contact
+        </Link>
         <Menu>
           <MenuButton
             mx={4}
@@ -35,7 +44,7 @@ const Navigation = ({ username, productLines, headerNav }) => {
             bgColor={headerNav.fields.buttonBgColor || "teal"}
             color={headerNav.fields.buttonTextColor || "white"}
             onClick={() => {
-              if (productLines.length === 0) {
+              if (!productLines || productLines.length === 0) {
                 toast({
                   title: "Error Retrieving Product Catalog.",
                   description:
@@ -71,11 +80,7 @@ const Navigation = ({ username, productLines, headerNav }) => {
               ))}
           </MenuList>
         </Menu>
-        <NextLink href="/contact" passHref>
-          <Link px={4} fontSize="xl">
-            Contact
-          </Link>
-        </NextLink>
+
         {username ? null : (
           <NextLink href="/register" passHref>
             <Link px={4} fontSize="xl">
@@ -106,23 +111,30 @@ const Navigation = ({ username, productLines, headerNav }) => {
           ></MenuButton>
           <MenuList>
             <MenuItem>
-              <NextLink href="#" passHref>
+              <NextLink href="/business-products" passHref>
                 <Link px={4} fontSize="xl">
-                  For Business
+                  Business
                 </Link>
               </NextLink>
             </MenuItem>
             <MenuItem>
-              <NextLink href="#" passHref>
+              <NextLink href="/residential-products" passHref>
                 <Link px={4} fontSize="xl">
-                  For Home
+                  Personal
                 </Link>
               </NextLink>
             </MenuItem>
             <MenuItem>
-              <NextLink href="#" passHref>
+              <NextLink href="/contact" passHref>
                 <Link px={4} fontSize="xl">
                   Contact
+                </Link>
+              </NextLink>
+            </MenuItem>
+            <MenuItem>
+              <NextLink href="/product-lines" passHref>
+                <Link px={4} fontSize="xl">
+                  Products
                 </Link>
               </NextLink>
             </MenuItem>

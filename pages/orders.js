@@ -16,9 +16,18 @@ import { Alert, AlertIcon } from "@chakra-ui/alert";
 import { Spinner } from "@chakra-ui/spinner";
 import { Accordion } from "@chakra-ui/accordion";
 import OrderItem from "../components/OrderItem";
-import fetch from "../utils/fetchJson";
+import fetchJson from "../utils/fetchJson";
+import { getHeaderAndFooterNavigationOfWebsite } from "../utils/contentful";
 
-export default function orderPage({ username, customerRef }) {
+export default function orderPage({
+  headerNav,
+  footerNav,
+  headerLogo,
+  footerLogo,
+  productLines,
+  username,
+  customerRef,
+}) {
   const { orders, isLoading, isError, mutateOrders } = useOrders(customerRef);
   if (orders) {
     orders.orderSummaries.sort(
@@ -34,7 +43,7 @@ export default function orderPage({ username, customerRef }) {
     ordersCopy[index].order.status = "submitted";
     mutateOrders({ ...orders, orderSumaries: ordersCopy }, false);
     try {
-      await fetch(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/submit`, {
+      await fetchJson(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/submit`, {
         method: "POST",
         headers: { accept: "application/json" },
         body: JSON.stringify({ orderLastUpdated: lastUpdated }),
@@ -66,7 +75,7 @@ export default function orderPage({ username, customerRef }) {
     ordersCopy[index].order.status = "cancelled";
     mutateOrders({ ...orders, orderSumaries: ordersCopy }, false);
     try {
-      await fetch(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/cancel`, {
+      await fetchJson(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/cancel`, {
         method: "POST",
         headers: { accept: "application/json" },
       });
@@ -104,21 +113,34 @@ export default function orderPage({ username, customerRef }) {
   if (orders && orders.orderSummaries.length === 0) {
     return (
       <>
-        <Header username={username} />
+        <Header
+          username={username}
+          initialLogoSrc={headerLogo.fields.file.url}
+          headerNav={headerNav.items[0]}
+          productLines={productLines}
+        />
         <Box h="30vh" w="80%" mt={12} mx="auto">
           <Alert status="warning">
             <AlertIcon />
             You have no orders at this moment.
           </Alert>
         </Box>
-        <Footer />
+        <Footer
+          logoURL={footerLogo.fields.file.url}
+          footerNav={footerNav.items[0]}
+        />
       </>
     );
   }
 
   return (
     <>
-      <Header username={username} />
+      <Header
+        username={username}
+        initialLogoSrc={headerLogo.fields.file.url}
+        headerNav={headerNav.items[0]}
+        productLines={productLines}
+      />
       {isLoading && (
         <Flex h="70vh" justify="center" align="center" direction="column">
           <Spinner
@@ -151,12 +173,30 @@ export default function orderPage({ username, customerRef }) {
           </Accordion>
         </Box>
       )}
-      <Footer />
+      <Footer
+        logoURL={footerLogo.fields.file.url}
+        footerNav={footerNav.items[0]}
+      />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req }) {
+  let productLines;
+
+  const { headerNav, footerNav, headerLogo, footerLogo } =
+    await getHeaderAndFooterNavigationOfWebsite(
+      process.env.CONTENTFUL_WEBSITE_ID
+    );
+
+  const productLinesRes = await fetch(
+    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+  );
+  if (productLinesRes.status > 400) {
+    productLines = [];
+  } else {
+    productLines = await productLinesRes.json();
+  }
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   if (!user) {
@@ -173,6 +213,11 @@ export const getServerSideProps = withSession(async function ({ req }) {
 
   return {
     props: {
+      headerNav,
+      footerNav,
+      headerLogo,
+      footerLogo,
+      productLines,
       username: user.firstName,
       customerRef,
     },

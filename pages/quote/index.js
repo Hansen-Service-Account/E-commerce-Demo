@@ -31,15 +31,31 @@ import useQuote from "../../hooks/useQuote";
 import { dbConnect } from "../../middleware/db";
 import withSession from "../../middleware/session";
 import User from "../../models/user";
-import { DARK_GOLD, HANSEN_CPQ_BASE_URL } from "../../utils/constants";
+import {
+  DARK_GOLD,
+  HANSEN_CPQ_BASE_URL,
+  HANSEN_CPQ_V2_BASE_URL,
+} from "../../utils/constants";
 import { useRouter } from "next/router";
 import { Button } from "@chakra-ui/button";
 import useRecurringCharge from "../../hooks/useRecurringCharge";
 import QuoteSummary from "../../components/QuoteSummary";
 import PricingSummary from "../../components/PricingSummary";
 import QuoteStatus from "../../components/QuoteStatus";
+import {
+  getHeaderAndFooterNavigationOfWebsite,
+  getPageSectionsOfWebPage,
+} from "../../utils/contentful";
 
-export default function Quote({ username, quoteId }) {
+export default function Quote({
+  headerNav,
+  footerNav,
+  headerLogo,
+  footerLogo,
+  productLines,
+  username,
+  quoteId,
+}) {
   const { quote, mutateQuote, isLoading, isError } = useQuote(quoteId);
   const recurringCharges = !isLoading && !isError && useRecurringCharge(quote);
   const router = useRouter();
@@ -58,7 +74,12 @@ export default function Quote({ username, quoteId }) {
   };
   return (
     <>
-      <Header username={username} />
+      <Header
+        username={username}
+        initialLogoSrc={headerLogo.fields.file.url}
+        productLines={productLines}
+        headerNav={headerNav.items[0]}
+      />
       {isLoading && (
         <Flex h="70vh" justify="center" align="center" direction="column">
           <Spinner
@@ -74,7 +95,7 @@ export default function Quote({ username, quoteId }) {
         </Flex>
       )}
       {quote && (
-        <Box w={{ base: "95%", md: "90%" }} mx="auto">
+        <Box w={{ base: "95%", md: "90%" }} mx="auto" py={24}>
           <Heading as="h3" py={6}>
             Quote Summary
           </Heading>
@@ -101,15 +122,31 @@ export default function Quote({ username, quoteId }) {
           </Flex>
         </Box>
       )}
-      <Footer />
+      <Footer
+        logoURL={footerLogo.fields.file.url}
+        footerNav={footerNav.items[0]}
+      />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req }) {
+  let productLines;
+  const { headerNav, footerNav, headerLogo, footerLogo } =
+    await getHeaderAndFooterNavigationOfWebsite(
+      process.env.CONTENTFUL_WEBSITE_ID
+    );
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
+  const productLinesRes = await fetch(
+    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+  );
+  if (productLinesRes.status > 400) {
+    productLines = [];
+  } else {
+    productLines = await productLinesRes.json();
+  }
 
   if (!user) {
     return {
@@ -120,10 +157,28 @@ export const getServerSideProps = withSession(async function ({ req }) {
     };
   }
 
+  if (!quoteId) {
+    return {
+      props: {
+        headerNav,
+        footerNav,
+        headerLogo,
+        footerLogo,
+        productLines,
+        username: user.firstName,
+      },
+    };
+  }
+
   return {
     props: {
-      quoteId,
+      headerNav,
+      footerNav,
+      headerLogo,
+      footerLogo,
+      productLines,
       username: user.firstName,
+      quoteId,
     },
   };
 });

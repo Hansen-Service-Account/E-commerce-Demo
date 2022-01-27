@@ -3,21 +3,32 @@ import { Spinner } from "@chakra-ui/spinner";
 import React, { useState } from "react";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
-
 import { dbConnect } from "../../middleware/db";
 import withSession from "../../middleware/session";
 import User from "../../models/user";
 import Error from "next/error";
 import fetch from "../../utils/nodeFetchJson";
 import {
-  HANSEN_CPQ_BASE_URL,
   HANSEN_CUSTOMER_REF,
+  HANSEN_CPQ_V2_BASE_URL,
 } from "../../utils/constants";
 import useOrder from "../../hooks/useOrder";
 import { useRouter } from "next/router";
 import { Alert, AlertIcon } from "@chakra-ui/alert";
+import {
+  getHeaderAndFooterNavigationOfWebsite,
+  getPageSectionsOfWebPage,
+} from "../../../utils/contentful";
 
-export default function orderId({ orderId, username }) {
+export default function orderId({
+  headerNav,
+  footerNav,
+  headerLogo,
+  footerLogo,
+  productLines,
+  orderId,
+  username,
+}) {
   const { order, isLoading, isError } = useOrder(orderId);
   const router = useRouter();
   if (!order && !isLoading && !isError) {
@@ -34,21 +45,34 @@ export default function orderId({ orderId, username }) {
   if (isError) {
     return (
       <>
-        <Header username={username} />
+        <Header
+          username={username}
+          initialLogoSrc={headerLogo.fields.file.url}
+          productLines={productLines}
+          headerNav={headerNav.items[0]}
+        />
         <Center height="70vh" overflow="hidden">
           <Error
             statusCode={isError.response.status}
             title={isError.data.responseText}
           />
         </Center>
-        <Footer />
+        <Footer
+          logoURL={footerLogo.fields.file.url}
+          footerNav={footerNav.items[0]}
+        />
       </>
     );
   }
 
   return (
     <>
-      <Header username={username} />
+      <Header
+        username={username}
+        initialLogoSrc={headerLogo.fields.file.url}
+        productLines={productLines}
+        headerNav={headerNav.items[0]}
+      />
       {isLoading && (
         <Flex h="70vh" justify="center" align="center" direction="column">
           <Spinner
@@ -82,12 +106,30 @@ export default function orderId({ orderId, username }) {
           </Stack>
         </Box>
       )}
-      <Footer />
+      <Footer
+        logoURL={footerLogo.fields.file.url}
+        footerNav={footerNav.items[0]}
+      />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req, params }) {
+  let productLines;
+
+  const { headerNav, footerNav, headerLogo, footerLogo } =
+    await getHeaderAndFooterNavigationOfWebsite(
+      process.env.CONTENTFUL_WEBSITE_ID
+    );
+
+  const productLinesRes = await fetch(
+    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+  );
+  if (productLinesRes.status > 400) {
+    productLines = [];
+  } else {
+    productLines = await productLinesRes.json();
+  }
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
 
@@ -118,7 +160,7 @@ export const getServerSideProps = withSession(async function ({ req, params }) {
     req.session.unset("orderId");
     await req.session.save();
 
-    const newQuote = await fetch(`${HANSEN_CPQ_BASE_URL}/quotes`, {
+    const newQuote = await fetch(`${HANSEN_CPQ_V2_BASE_URL}/quotes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -134,6 +176,11 @@ export const getServerSideProps = withSession(async function ({ req, params }) {
 
   return {
     props: {
+      headerNav,
+      footerNav,
+      headerLogo,
+      footerLogo,
+      productLines,
       orderId: params.orderID,
       username: user.firstName,
       key: orderId,

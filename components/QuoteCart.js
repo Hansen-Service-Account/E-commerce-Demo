@@ -95,7 +95,6 @@ const QuoteCart = ({ quoteId, adding }) => {
       mutateQuote();
     }
   };
-  console.log(quote);
   return (
     <>
       <Button
