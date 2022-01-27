@@ -2,8 +2,6 @@ import { Button, Flex, Text, Box } from "@chakra-ui/react";
 import Image from "next/image";
 
 export const HighlightProductsSection = ({ pageSection }) => {
-  console.log(pageSection);
-
   return (
     <Box
       as="section"

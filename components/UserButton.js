@@ -29,7 +29,7 @@ export default function UserButton({
             bg={buttonBgColor || "#e32525"}
             color={buttonTextColor || "white"}
             textTransform="uppercase"
-            fontSize={{ base: "10px", sm: "16px" }}
+            fontSize="1rem"
             as={Button}
             rightIcon={<ChevronDownIcon />}
             _hover={{ bg: "black" }}

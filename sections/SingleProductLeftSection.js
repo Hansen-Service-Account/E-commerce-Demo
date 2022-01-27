@@ -11,7 +11,7 @@ export const SingleProductLeftSection = ({ pageSection }) => {
       py={24}
       bgColor={pageSection.fields.backgroundColor || "transparent"}
     >
-      <Flex w="80%" align="center" mx="auto" h="80vh">
+      <Flex w="80%" align="center" mx="auto" h={{ base: "40vh", md: "60vh" }}>
         <Flex
           flexDir="column"
           justify="center"

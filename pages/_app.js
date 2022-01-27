@@ -1,6 +1,6 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { theme } from "../utils/colorScheme";
-import { useRouter } from "next/router";
+import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }) {
   return (
