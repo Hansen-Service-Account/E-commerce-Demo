@@ -4,6 +4,7 @@ import { SingleProductLeftSection } from "./SingleProductLeftSection";
 import { SingleProductRightSection } from "./SingleProductRightSection";
 import { ProductsCarouselSection } from "./ProductsCarouselSection";
 import { CallToActionSection } from "./CallToActionSection";
+import { TextlessCarouselSection } from "./TextlessCarouselSection";
 
 export const sections = {
   HeroSection,
@@ -12,4 +13,5 @@ export const sections = {
   SingleProductRightSection,
   ProductsCarouselSection,
   CallToActionSection,
+  TextlessCarouselSection,
 };
