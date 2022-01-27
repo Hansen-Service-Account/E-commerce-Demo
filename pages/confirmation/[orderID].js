@@ -18,7 +18,7 @@ import { Alert, AlertIcon } from "@chakra-ui/alert";
 import {
   getHeaderAndFooterNavigationOfWebsite,
   getPageSectionsOfWebPage,
-} from "../../../utils/contentful";
+} from "../../utils/contentful";
 
 export default function orderId({
   headerNav,
