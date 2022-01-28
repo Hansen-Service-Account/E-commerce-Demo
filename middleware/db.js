@@ -20,7 +20,7 @@ export const dbConnect = async () => {
       };
 
       cached.promise = mongoose
-        .connect(process.env.NEXT_PUBLIC_MONGODB_URI, opts)
+        .connect(process.env.MONGODB_URI, opts)
         .then((mongoose) => {
           return mongoose;
         });
