@@ -1,51 +1,19 @@
-import Icon from "@chakra-ui/icon";
-import {
-  Badge,
-  Box,
-  Center,
-  Divider,
-  Flex,
-  Heading,
-  StackDivider,
-  Text,
-  VStack,
-  Wrap,
-  WrapItem,
-} from "@chakra-ui/layout";
+import { Box, Flex, Heading } from "@chakra-ui/layout";
 import { Spinner } from "@chakra-ui/spinner";
-import {
-  Table,
-  TableCaption,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-} from "@chakra-ui/table";
-import { Tooltip } from "@chakra-ui/tooltip";
 import React from "react";
-import { IoIosCloseCircle, IoIosCog } from "react-icons/io";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import useQuote from "../../hooks/useQuote";
 import { dbConnect } from "../../middleware/db";
 import withSession from "../../middleware/session";
 import User from "../../models/user";
-import {
-  DARK_GOLD,
-  HANSEN_CPQ_BASE_URL,
-  HANSEN_CPQ_V2_BASE_URL,
-} from "../../utils/constants";
 import { useRouter } from "next/router";
 import { Button } from "@chakra-ui/button";
 import useRecurringCharge from "../../hooks/useRecurringCharge";
 import QuoteSummary from "../../components/QuoteSummary";
 import PricingSummary from "../../components/PricingSummary";
 import QuoteStatus from "../../components/QuoteStatus";
-import {
-  getHeaderAndFooterNavigationOfWebsite,
-  getPageSectionsOfWebPage,
-} from "../../utils/contentful";
+import { getWebPageByWebsiteIdAndPageName } from "../../utils/contentful";
 
 export default function Quote({
   headerNav,
@@ -67,9 +35,12 @@ export default function Quote({
       },
       false
     );
-    await fetch(`${HANSEN_CPQ_BASE_URL}/quotes/${quoteId}/items/${itemId}`, {
-      method: "DELETE",
-    });
+    await fetch(
+      `${process.env.NEXT_PUBLIC_HANSEN_CPQ_V2_BASE_URL}/quotes/${quoteId}/items/${itemId}`,
+      {
+        method: "DELETE",
+      }
+    );
     mutateQuote();
   };
   return (
@@ -78,7 +49,7 @@ export default function Quote({
         username={username}
         initialLogoSrc={headerLogo.fields.file.url}
         productLines={productLines}
-        headerNav={headerNav.items[0]}
+        headerNav={headerNav}
       />
       {isLoading && (
         <Flex h="70vh" justify="center" align="center" direction="column">
@@ -122,10 +93,7 @@ export default function Quote({
           </Flex>
         </Box>
       )}
-      <Footer
-        logoURL={footerLogo.fields.file.url}
-        footerNav={footerNav.items[0]}
-      />
+      <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
     </>
   );
 }
@@ -133,14 +101,12 @@ export default function Quote({
 export const getServerSideProps = withSession(async function ({ req }) {
   let productLines;
   const { headerNav, footerNav, headerLogo, footerLogo } =
-    await getHeaderAndFooterNavigationOfWebsite(
-      process.env.CONTENTFUL_WEBSITE_ID
-    );
+    await getWebPageByWebsiteIdAndPageName(process.env.CONTENTFUL_WEBSITE_ID);
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
   const productLinesRes = await fetch(
-    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+    `${process.env.HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
   );
   if (productLinesRes.status > 400) {
     productLines = [];

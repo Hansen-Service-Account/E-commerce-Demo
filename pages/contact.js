@@ -3,32 +3,17 @@ import withSession from "../middleware/session";
 import { dbConnect } from "../middleware/db";
 import User from "../models/user";
 import Footer from "../components/Footer";
-import {
-  Badge,
-  Box,
-  Flex,
-  Heading,
-  Stack,
-  StackDivider,
-  Text,
-  VStack,
-} from "@chakra-ui/layout";
-import { Avatar } from "@chakra-ui/avatar";
+import { Box, Flex, Heading, Stack, Text } from "@chakra-ui/layout";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import Icon from "@chakra-ui/icon";
 import {
-  FaFacebook,
   FaFacebookSquare,
   FaGooglePlusSquare,
   FaInstagramSquare,
   FaTwitterSquare,
   FaYoutubeSquare,
 } from "react-icons/fa";
-import { DARK_GOLD, HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
-import {
-  getHeaderAndFooterNavigationOfWebsite,
-  getPageSectionsOfWebPage,
-} from "../utils/contentful";
+import { getWebPageByWebsiteIdAndPageName } from "../utils/contentful";
 
 export default function contactPage({
   headerNav,
@@ -53,7 +38,7 @@ export default function contactPage({
       <Header
         initialLogoSrc={headerLogo.fields.file.url}
         productLines={productLines}
-        headerNav={headerNav.items[0]}
+        headerNav={headerNav}
         username={username}
       />
       <Flex
@@ -145,10 +130,7 @@ export default function contactPage({
           </LoadScript>
         </Box>
       </Flex>
-      <Footer
-        logoURL={footerLogo.fields.file.url}
-        footerNav={footerNav.items[0]}
-      />
+      <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
     </>
   );
 }
@@ -157,15 +139,13 @@ export const getServerSideProps = withSession(async function ({ req }) {
   let productLines;
 
   const { headerNav, footerNav, headerLogo, footerLogo } =
-    await getHeaderAndFooterNavigationOfWebsite(
-      process.env.CONTENTFUL_WEBSITE_ID
-    );
+    await getWebPageByWebsiteIdAndPageName(process.env.CONTENTFUL_WEBSITE_ID);
 
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
   const productLinesRes = await fetch(
-    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+    `${process.env.HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
   );
   if (productLinesRes.status > 400) {
     productLines = [];

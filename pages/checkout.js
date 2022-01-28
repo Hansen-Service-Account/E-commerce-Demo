@@ -3,7 +3,7 @@ import withSession from "../middleware/session";
 import { dbConnect } from "../middleware/db";
 import User from "../models/user";
 import Footer from "../components/Footer";
-import { Box, Center, Flex, Heading } from "@chakra-ui/layout";
+import { Box, Flex, Heading } from "@chakra-ui/layout";
 import useQuote from "../hooks/useQuote";
 import { Spinner } from "@chakra-ui/spinner";
 import { useToast } from "@chakra-ui/toast";
@@ -12,21 +12,14 @@ import PricingSummary from "../components/PricingSummary";
 import useRecurringCharge from "../hooks/useRecurringCharge";
 import { BsShieldLockFill } from "react-icons/bs";
 import Icon from "@chakra-ui/icon";
-import {
-  DARK_GOLD,
-  HANSEN_CPQ_V2_BASE_URL,
-  HANSEN_CUSTOMER_REF,
-} from "../utils/constants";
+import { DARK_GOLD, HANSEN_CUSTOMER_REF } from "../utils/constants";
 import { Alert, AlertIcon } from "@chakra-ui/alert";
 import Payment from "../components/Payment";
 import { useState } from "react";
 import fetchJson from "../utils/fetchJson";
 import { useRouter } from "next/router";
 import { mutate } from "swr";
-import {
-  getHeaderAndFooterNavigationOfWebsite,
-  getPageSectionsOfWebPage,
-} from "../utils/contentful";
+import { getWebPageByWebsiteIdAndPageName } from "../utils/contentful";
 
 export default function checkout({
   headerNav,
@@ -60,7 +53,7 @@ export default function checkout({
         <Header
           username={username}
           initialLogoSrc={headerLogo.fields.file.url}
-          headerNav={headerNav.items[0]}
+          headerNav={headerNav}
           productLines={productLines}
         />
         <Box h="30vh" w="80%" mt={12} mx="auto" py={24}>
@@ -70,10 +63,7 @@ export default function checkout({
             before making a payment.
           </Alert>
         </Box>
-        <Footer
-          logoURL={footerLogo.fields.file.url}
-          footerNav={footerNav.items[0]}
-        />
+        <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
       </>
     );
   }
@@ -91,7 +81,9 @@ export default function checkout({
         headers: { "Content-Type": "application/json" },
       });
       setSubmitting(false);
-      await mutate(`${HANSEN_CPQ_V2_BASE_URL}/customers/${customerRef}/orders`);
+      await mutate(
+        `${process.env.HANSEN_CPQ_V2_BASE_URL}/customers/${customerRef}/orders`
+      );
       toast({
         title: `Order ${result.orderReference} has been placed.`,
         description: "Payment processed and order placed, redirecting...",
@@ -120,7 +112,7 @@ export default function checkout({
       <Header
         username={username}
         initialLogoSrc={headerLogo.fields.file.url}
-        headerNav={headerNav.items[0]}
+        headerNav={headerNav}
         productLines={productLines}
       />
       {isLoading && (
@@ -178,24 +170,19 @@ export default function checkout({
           />
         </Box>
       )}
-      <Footer
-        logoURL={footerLogo.fields.file.url}
-        footerNav={footerNav.items[0]}
-      />
+      <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
     </>
   );
 }
 
-export const getServerSideProps = withSession(async function ({ req, res }) {
+export const getServerSideProps = withSession(async function ({ req }) {
   let productLines;
 
   const { headerNav, footerNav, headerLogo, footerLogo } =
-    await getHeaderAndFooterNavigationOfWebsite(
-      process.env.CONTENTFUL_WEBSITE_ID
-    );
+    await getWebPageByWebsiteIdAndPageName(process.env.CONTENTFUL_WEBSITE_ID);
 
   const productLinesRes = await fetch(
-    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+    `${process.env.NEXT_PUBLIC_HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
   );
   if (productLinesRes.status > 400) {
     productLines = [];

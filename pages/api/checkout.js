@@ -2,7 +2,7 @@ import withSession from "../../middleware/session";
 import User from "../../models/user";
 import { dbConnect } from "../../middleware/db";
 import fetch from "../../utils/nodeFetchJson";
-import { HANSEN_CPQ_V2_BASE_URL } from "../../utils/constants";
+import { HANSEN_CUSTOMER_REF } from "../../utils/constants";
 
 export default withSession(async (req, res) => {
   try {
@@ -30,7 +30,7 @@ export default withSession(async (req, res) => {
     const { quoteId, quoteLastUpdated, activationDate } = req.body;
 
     const result = await fetch(
-      `${HANSEN_CPQ_V2_BASE_URL}/quotes/${quoteId}/convertToOrder`,
+      `${process.env.HANSEN_CPQ_V2_BASE_URL}/quotes/${quoteId}/convertToOrder`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,16 +41,19 @@ export default withSession(async (req, res) => {
       }
     );
     console.log(result);
-    req.session.set("orderId", result.orderId);
-    const newQuote = await fetch(`${HANSEN_CPQ_V2_BASE_URL}/quotes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        quoteType: 0,
-        customerRef: `0001`,
-        items: [],
-      }),
-    });
+    req.session.set("orderId", result.orderReference);
+    const newQuote = await fetch(
+      `${process.env.HANSEN_CPQ_V2_BASE_URL}/quotes`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quoteType: 0,
+          customerRef: HANSEN_CUSTOMER_REF,
+          items: [],
+        }),
+      }
+    );
     req.session.set("quoteId", newQuote.id);
     await req.session.save();
     return res.status(200).json(result);

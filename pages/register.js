@@ -1,10 +1,8 @@
 import Header from "../components/Header";
 import withSession from "../middleware/session";
-
 import RegistrationForm from "../components/RegistrationForm";
 import Footer from "../components/Footer";
-import { getHeaderAndFooterNavigationOfWebsite } from "../utils/contentful";
-import { HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
+import { getWebPageByWebsiteIdAndPageName } from "../utils/contentful";
 
 export default function registerPage({
   headerNav,
@@ -17,14 +15,11 @@ export default function registerPage({
     <>
       <Header
         initialLogoSrc={headerLogo.fields.file.url}
-        headerNav={headerNav.items[0]}
+        headerNav={headerNav}
         productLines={productLines}
       />
       <RegistrationForm />
-      <Footer
-        logoURL={footerLogo.fields.file.url}
-        footerNav={footerNav.items[0]}
-      />
+      <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
     </>
   );
 }
@@ -33,12 +28,10 @@ export const getServerSideProps = withSession(async function ({ req }) {
   let productLines;
 
   const { headerNav, footerNav, headerLogo, footerLogo } =
-    await getHeaderAndFooterNavigationOfWebsite(
-      process.env.CONTENTFUL_WEBSITE_ID
-    );
+    await getWebPageByWebsiteIdAndPageName(process.env.CONTENTFUL_WEBSITE_ID);
 
   const productLinesRes = await fetch(
-    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+    `${process.env.HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
   );
   if (productLinesRes.status > 400) {
     productLines = [];

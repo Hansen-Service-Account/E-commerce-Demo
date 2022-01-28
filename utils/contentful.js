@@ -50,3 +50,31 @@ export const getPageSectionsOfWebPage = async (webPageName) => {
     throw err;
   }
 };
+
+export const getWebPageByWebsiteIdAndPageName = async (websiteId, pageName) => {
+  try {
+    const website = await client.getEntries({
+      content_type: "website",
+      "sys.id": websiteId,
+      include: 3,
+    });
+    const webPage = pageName
+      ? website.items[0].fields.webPages.find(
+          (wp) => wp.fields.pageName === pageName
+        )
+      : {};
+    const headerNav = website.items[0].fields.headerNavigation;
+    const footerNav = website.items[0].fields.footerNavigation;
+    const headerLogo = headerNav.fields.logo;
+    const footerLogo = footerNav.fields.logo;
+    return {
+      webPage,
+      headerNav,
+      footerNav,
+      headerLogo,
+      footerLogo,
+    };
+  } catch (err) {
+    throw err;
+  }
+};

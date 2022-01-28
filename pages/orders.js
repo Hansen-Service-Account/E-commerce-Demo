@@ -4,11 +4,6 @@ import { dbConnect } from "../middleware/db";
 import User from "../models/user";
 import Footer from "../components/Footer";
 import { Box, Flex, Heading } from "@chakra-ui/layout";
-
-import {
-  HANSEN_CPQ_V2_BASE_URL,
-  HANSEN_CUSTOMER_REF,
-} from "../utils/constants";
 import useOrders from "../hooks/useOrders";
 import { useToast } from "@chakra-ui/toast";
 import ErrorToast from "../components/ErrorToast";
@@ -17,7 +12,7 @@ import { Spinner } from "@chakra-ui/spinner";
 import { Accordion } from "@chakra-ui/accordion";
 import OrderItem from "../components/OrderItem";
 import fetchJson from "../utils/fetchJson";
-import { getHeaderAndFooterNavigationOfWebsite } from "../utils/contentful";
+import { getWebPageByWebsiteIdAndPageName } from "../utils/contentful";
 
 export default function orderPage({
   headerNav,
@@ -43,11 +38,14 @@ export default function orderPage({
     ordersCopy[index].order.status = "submitted";
     mutateOrders({ ...orders, orderSumaries: ordersCopy }, false);
     try {
-      await fetchJson(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/submit`, {
-        method: "POST",
-        headers: { accept: "application/json" },
-        body: JSON.stringify({ orderLastUpdated: lastUpdated }),
-      });
+      await fetchJson(
+        `${process.env.NEXT_PUBLIC_HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/submit`,
+        {
+          method: "POST",
+          headers: { accept: "application/json" },
+          body: JSON.stringify({ orderLastUpdated: lastUpdated }),
+        }
+      );
       mutateOrders();
       toast({
         title: `Order ${orderId} submitted`,
@@ -75,10 +73,13 @@ export default function orderPage({
     ordersCopy[index].order.status = "cancelled";
     mutateOrders({ ...orders, orderSumaries: ordersCopy }, false);
     try {
-      await fetchJson(`${HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/cancel`, {
-        method: "POST",
-        headers: { accept: "application/json" },
-      });
+      await fetchJson(
+        `${process.env.NEXT_PUBLIC_HANSEN_CPQ_V2_BASE_URL}/orders/${orderId}/cancel`,
+        {
+          method: "POST",
+          headers: { accept: "application/json" },
+        }
+      );
       mutateOrders();
       toast({
         title: `Order ${orderId} cancelled`,
@@ -116,7 +117,7 @@ export default function orderPage({
         <Header
           username={username}
           initialLogoSrc={headerLogo.fields.file.url}
-          headerNav={headerNav.items[0]}
+          headerNav={headerNav}
           productLines={productLines}
         />
         <Box h="30vh" w="80%" mt={12} mx="auto">
@@ -125,10 +126,7 @@ export default function orderPage({
             You have no orders at this moment.
           </Alert>
         </Box>
-        <Footer
-          logoURL={footerLogo.fields.file.url}
-          footerNav={footerNav.items[0]}
-        />
+        <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
       </>
     );
   }
@@ -138,7 +136,7 @@ export default function orderPage({
       <Header
         username={username}
         initialLogoSrc={headerLogo.fields.file.url}
-        headerNav={headerNav.items[0]}
+        headerNav={headerNav}
         productLines={productLines}
       />
       {isLoading && (
@@ -173,10 +171,7 @@ export default function orderPage({
           </Accordion>
         </Box>
       )}
-      <Footer
-        logoURL={footerLogo.fields.file.url}
-        footerNav={footerNav.items[0]}
-      />
+      <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
     </>
   );
 }
@@ -185,12 +180,10 @@ export const getServerSideProps = withSession(async function ({ req }) {
   let productLines;
 
   const { headerNav, footerNav, headerLogo, footerLogo } =
-    await getHeaderAndFooterNavigationOfWebsite(
-      process.env.CONTENTFUL_WEBSITE_ID
-    );
+    await getWebPageByWebsiteIdAndPageName(process.env.CONTENTFUL_WEBSITE_ID);
 
   const productLinesRes = await fetch(
-    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+    `${process.env.HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
   );
   if (productLinesRes.status > 400) {
     productLines = [];

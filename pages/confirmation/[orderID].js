@@ -1,24 +1,15 @@
 import { Box, Center, Flex, Heading, Stack, Text } from "@chakra-ui/layout";
 import { Spinner } from "@chakra-ui/spinner";
-import React, { useState } from "react";
+import React from "react";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import { dbConnect } from "../../middleware/db";
 import withSession from "../../middleware/session";
 import User from "../../models/user";
 import Error from "next/error";
-import fetch from "../../utils/nodeFetchJson";
-import {
-  HANSEN_CUSTOMER_REF,
-  HANSEN_CPQ_V2_BASE_URL,
-} from "../../utils/constants";
 import useOrder from "../../hooks/useOrder";
-import { useRouter } from "next/router";
 import { Alert, AlertIcon } from "@chakra-ui/alert";
-import {
-  getHeaderAndFooterNavigationOfWebsite,
-  getPageSectionsOfWebPage,
-} from "../../utils/contentful";
+import { getWebPageByWebsiteIdAndPageName } from "../../utils/contentful";
 
 export default function orderId({
   headerNav,
@@ -30,15 +21,19 @@ export default function orderId({
   username,
 }) {
   const { order, isLoading, isError } = useOrder(orderId);
-  const router = useRouter();
   if (!order && !isLoading && !isError) {
     return (
       <>
-        <Header username={username} />
+        <Header
+          username={username}
+          initialLogoSrc={headerLogo.fields.file.url}
+          productLines={productLines}
+          headerNav={headerNav}
+        />
         <Center height="70vh" overflow="hidden">
           <Error statusCode={404} title="Resource not found" />
         </Center>
-        <Footer />
+        <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
       </>
     );
   }
@@ -49,7 +44,7 @@ export default function orderId({
           username={username}
           initialLogoSrc={headerLogo.fields.file.url}
           productLines={productLines}
-          headerNav={headerNav.items[0]}
+          headerNav={headerNav}
         />
         <Center height="70vh" overflow="hidden">
           <Error
@@ -57,10 +52,7 @@ export default function orderId({
             title={isError.data.responseText}
           />
         </Center>
-        <Footer
-          logoURL={footerLogo.fields.file.url}
-          footerNav={footerNav.items[0]}
-        />
+        <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
       </>
     );
   }
@@ -71,7 +63,7 @@ export default function orderId({
         username={username}
         initialLogoSrc={headerLogo.fields.file.url}
         productLines={productLines}
-        headerNav={headerNav.items[0]}
+        headerNav={headerNav}
       />
       {isLoading && (
         <Flex h="70vh" justify="center" align="center" direction="column">
@@ -106,10 +98,7 @@ export default function orderId({
           </Stack>
         </Box>
       )}
-      <Footer
-        logoURL={footerLogo.fields.file.url}
-        footerNav={footerNav.items[0]}
-      />
+      <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
     </>
   );
 }
@@ -118,12 +107,10 @@ export const getServerSideProps = withSession(async function ({ req, params }) {
   let productLines;
 
   const { headerNav, footerNav, headerLogo, footerLogo } =
-    await getHeaderAndFooterNavigationOfWebsite(
-      process.env.CONTENTFUL_WEBSITE_ID
-    );
+    await getWebPageByWebsiteIdAndPageName(process.env.CONTENTFUL_WEBSITE_ID);
 
   const productLinesRes = await fetch(
-    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+    `${process.env.HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
   );
   if (productLinesRes.status > 400) {
     productLines = [];
@@ -160,15 +147,20 @@ export const getServerSideProps = withSession(async function ({ req, params }) {
     req.session.unset("orderId");
     await req.session.save();
 
-    const newQuote = await fetch(`${HANSEN_CPQ_V2_BASE_URL}/quotes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: user.firstName,
-        customerRef: `${HANSEN_CUSTOMER_REF}`,
-        items: [],
-      }),
-    });
+    const newQuoteRes = await fetch(
+      `${process.env.HANSEN_CPQ_V2_BASE_URL}/quotes`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: user.firstName,
+          customerRef: `${HANSEN_CUSTOMER_REF}`,
+          items: [],
+        }),
+      }
+    );
+
+    const newQuote = await newQuoteRes.json();
 
     req.session.set("quoteId", newQuote.id);
     await req.session.save();

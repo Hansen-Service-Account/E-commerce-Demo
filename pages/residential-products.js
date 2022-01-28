@@ -1,12 +1,8 @@
 import Header from "../components/Header";
-import { HANSEN_CPQ_V2_BASE_URL } from "../utils/constants";
 import withSession from "../middleware/session";
 import { dbConnect } from "../middleware/db";
 import User from "../models/user";
-import {
-  getPageSectionsOfWebPage,
-  getHeaderAndFooterNavigationOfWebsite,
-} from "../utils/contentful";
+import { getWebPageByWebsiteIdAndPageName } from "../utils/contentful";
 import Footer from "../components/Footer";
 import QuoteCart from "../components/QuoteCart";
 import { sections } from "../sections/sections.config";
@@ -28,9 +24,9 @@ export default function residentialProducts({
         username={username}
         initialLogoSrc={headerLogo.fields.file.url}
         productLines={productLines}
-        headerNav={headerNav.items[0]}
+        headerNav={headerNav}
       />
-      {webPage.items[0].fields.pageSections.map(
+      {webPage.fields.pageSections.map(
         (ps) =>
           sections[ps.fields.designedSection] &&
           ps.sys.contentType.sys.id === "pageSection" &&
@@ -40,29 +36,24 @@ export default function residentialProducts({
           })
       )}
       {username && <QuoteCart quoteId={quoteId} />}
-      <Footer
-        logoURL={footerLogo.fields.file.url}
-        footerNav={footerNav.items[0]}
-      />
+      <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req }) {
   let productLines;
-  const { webPage, pageSections, imageAssets } = await getPageSectionsOfWebPage(
-    "Residential Products"
-  );
-  const { headerNav, footerNav, headerLogo, footerLogo } =
-    await getHeaderAndFooterNavigationOfWebsite(
-      process.env.CONTENTFUL_WEBSITE_ID
+  const { webPage, headerNav, footerNav, headerLogo, footerLogo } =
+    await getWebPageByWebsiteIdAndPageName(
+      process.env.CONTENTFUL_WEBSITE_ID,
+      "Residential Products"
     );
 
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
   const productLinesRes = await fetch(
-    `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+    `${process.env.HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
   );
   if (productLinesRes.status > 400) {
     productLines = [];
@@ -74,8 +65,6 @@ export const getServerSideProps = withSession(async function ({ req }) {
     return {
       props: {
         webPage,
-        pageSections,
-        imageAssets,
         headerNav,
         footerNav,
         headerLogo,
@@ -89,8 +78,6 @@ export const getServerSideProps = withSession(async function ({ req }) {
     return {
       props: {
         webPage,
-        pageSections,
-        imageAssets,
         headerNav,
         footerNav,
         headerLogo,
@@ -104,8 +91,6 @@ export const getServerSideProps = withSession(async function ({ req }) {
   return {
     props: {
       webPage,
-      pageSections,
-      imageAssets,
       headerNav,
       footerNav,
       headerLogo,

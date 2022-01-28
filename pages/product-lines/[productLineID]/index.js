@@ -1,5 +1,4 @@
 import Header from "../../../components/Header";
-import { HANSEN_CPQ_V2_BASE_URL } from "../../../utils/constants";
 import withSession from "../../../middleware/session";
 import { dbConnect } from "../../../middleware/db";
 import User from "../../../models/user";
@@ -10,10 +9,7 @@ import QuoteCart from "../../../components/QuoteCart";
 import fetcher from "../../../utils/nodeFetchJson";
 import Error from "next/error";
 import { useRouter } from "next/router";
-import {
-  getHeaderAndFooterNavigationOfWebsite,
-  getPageSectionsOfWebPage,
-} from "../../../utils/contentful";
+import { getWebPageByWebsiteIdAndPageName } from "../../../utils/contentful";
 
 export default function productLineID({
   status,
@@ -39,16 +35,13 @@ export default function productLineID({
           username={username}
           initialLogoSrc={headerLogo.fields.file.url}
           productLines={productLines}
-          headerNav={headerNav.items[0]}
+          headerNav={headerNav}
         />
         <Center height="70vh" overflow="hidden">
           <Error statusCode={status} title={errorMessage} />
         </Center>
         {username ? <QuoteCart quoteId={quoteId} /> : null}
-        <Footer
-          logoURL={footerLogo.fields.file.url}
-          footerNav={footerNav.items[0]}
-        />
+        <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
       </>
     );
   }
@@ -59,7 +52,7 @@ export default function productLineID({
         username={username}
         initialLogoSrc={headerLogo.fields.file.url}
         productLines={productLines}
-        headerNav={headerNav.items[0]}
+        headerNav={headerNav}
       />
       <Box py={24}>
         <Heading as="h2" size="lg" textAlign="center" textTransform="uppercase">
@@ -72,25 +65,20 @@ export default function productLineID({
       </Box>
       {username ? <QuoteCart quoteId={quoteId} /> : null}
 
-      <Footer
-        logoURL={footerLogo.fields.file.url}
-        footerNav={footerNav.items[0]}
-      />
+      <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req }) {
   const { headerNav, footerNav, headerLogo, footerLogo } =
-    await getHeaderAndFooterNavigationOfWebsite(
-      process.env.CONTENTFUL_WEBSITE_ID
-    );
+    await getWebPageByWebsiteIdAndPageName(process.env.CONTENTFUL_WEBSITE_ID);
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   const quoteId = req.session.get("quoteId");
   try {
     const productLines = await fetcher(
-      `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`,
+      `${process.env.HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },

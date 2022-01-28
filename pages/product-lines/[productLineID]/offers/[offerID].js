@@ -1,6 +1,5 @@
 import Header from "../../../../components/Header";
 import fetch from "../../../../utils/fetchJson";
-import { HANSEN_CPQ_V2_BASE_URL } from "../../../../utils/constants";
 import withSession from "../../../../middleware/session";
 import { dbConnect } from "../../../../middleware/db";
 import User from "../../../../models/user";
@@ -18,10 +17,7 @@ import Error from "next/error";
 import ErrorToast from "../../../../components/ErrorToast";
 import { Alert, AlertIcon } from "@chakra-ui/alert";
 import { useRouter } from "next/router";
-import {
-  getHeaderAndFooterNavigationOfWebsite,
-  getPageSectionsOfWebPage,
-} from "../../../../utils/contentful";
+import { getWebPageByWebsiteIdAndPageName } from "../../../../utils/contentful";
 
 export default function offerID({
   headerNav,
@@ -45,16 +41,13 @@ export default function offerID({
           username={username}
           initialLogoSrc={headerLogo.fields.file.url}
           productLines={productLines}
-          headerNav={headerNav.items[0]}
+          headerNav={headerNav}
         />
         <Center height="70vh" overflow="hidden">
           <Error statusCode={status} title={errorMessage} />
         </Center>
         {username ? <QuoteCart quoteId={quoteId} /> : null}
-        <Footer
-          logoURL={footerLogo.fields.file.url}
-          footerNav={footerNav.items[0]}
-        />
+        <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
       </>
     );
   }
@@ -70,7 +63,7 @@ export default function offerID({
           username={username}
           initialLogoSrc={headerLogo.fields.file.url}
           productLines={productLines}
-          headerNav={headerNav.items[0]}
+          headerNav={headerNav}
         />
         <CategorySelection
           categories={productLine.children}
@@ -115,10 +108,7 @@ export default function offerID({
           </Alert>
         )}
         {username ? <QuoteCart quoteId={quoteId} /> : null}
-        <Footer
-          logoURL={footerLogo.fields.file.url}
-          footerNav={footerNav.items[0]}
-        />
+        <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
       </>
     );
   }
@@ -134,18 +124,21 @@ export default function offerID({
         false
       );
       setAdding(true);
-      await fetch(`${HANSEN_CPQ_V2_BASE_URL}/quotes/${quoteId}/items`, {
-        method: "POST",
-        body: JSON.stringify({
-          productId,
-          linkedItemId: "",
-          itemAction: "add",
-        }),
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-        },
-      });
+      await fetch(
+        `${process.env.NEXT_PUBLIC_HANSEN_CPQ_V2_BASE_URL}/quotes/${quoteId}/items`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            productId,
+            linkedItemId: "",
+            itemAction: "add",
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+        }
+      );
       mutateQuote();
       toast({
         title: "Item added.",
@@ -182,7 +175,7 @@ export default function offerID({
         username={username}
         initialLogoSrc={headerLogo.fields.file.url}
         productLines={productLines}
-        headerNav={headerNav.items[0]}
+        headerNav={headerNav}
       />
       <CategorySelection
         urlPrefix={`/product-lines/${productLineID}/offers`}
@@ -222,24 +215,19 @@ export default function offerID({
         </Alert>
       )}
       {username && <QuoteCart quoteId={quoteId} adding={adding} />}
-      <Footer
-        logoURL={footerLogo.fields.file.url}
-        footerNav={footerNav.items[0]}
-      />
+      <Footer logoURL={footerLogo.fields.file.url} footerNav={footerNav} />
     </>
   );
 }
 
 export const getServerSideProps = withSession(async function ({ req, params }) {
   const { headerNav, footerNav, headerLogo, footerLogo } =
-    await getHeaderAndFooterNavigationOfWebsite(
-      process.env.CONTENTFUL_WEBSITE_ID
-    );
+    await getWebPageByWebsiteIdAndPageName(process.env.CONTENTFUL_WEBSITE_ID);
   await dbConnect();
   const user = await User.findOne({ _id: req.session.get("userId") });
   try {
     const productLines = await fetcher(
-      `${HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
+      `${process.env.HANSEN_CPQ_V2_BASE_URL}/classifications/Selling_Category_Value`
     );
     const productLine = productLines.find(
       (r) => r.name === params.productLineID.replace(/-/g, " ")
@@ -248,7 +236,7 @@ export const getServerSideProps = withSession(async function ({ req, params }) {
     const offer = productLine.children.find(
       (p) => p.name === params.offerID.replace(/-/g, " ")
     );
-    const endPoint = `${HANSEN_CPQ_V2_BASE_URL}/offers?InstanceTypeNames=Package,Promotion,Bundle&Classifications=[Sales_Category;${offer.guid};false]&ClassificationElementName=Sales_Category&xsltCode=offer_special&at[p1]=ID&el[p2]=Name&at[p3]=BusinessID&el[p4]=Description&el[p5]=Element_Guid&el[p6]=Description`;
+    const endPoint = `${process.env.HANSEN_CPQ_V2_BASE_URL}/offers?InstanceTypeNames=Package,Promotion,Bundle&Classifications=[Sales_Category;${offer.guid};false]&ClassificationElementName=Sales_Category&xsltCode=offer_special&at[p1]=ID&el[p2]=Name&at[p3]=BusinessID&el[p4]=Description&el[p5]=Element_Guid&el[p6]=Description`;
     const result = await fetcher(endPoint);
     const products = result[0] || null;
     if (!user) {

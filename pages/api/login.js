@@ -35,18 +35,20 @@ export default withSession(async (req, res) => {
     retrievedUserInfo = userInfo;
     await req.session.save();
     if (!req.session.get("quoteId")) {
-      const result = await fetch(`${HANSEN_CPQ_V2_BASE_URL}/quotes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          quoteType: 0,
-          customerRef: `0001`,
-          items: [],
-        }),
-      });
+      const result = await fetch(
+        `${process.env.HANSEN_CPQ_V2_BASE_URL}/quotes`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            quoteType: 0,
+            customerRef: HANSEN_CUSTOMER_REF,
+            items: [],
+          }),
+        }
+      );
 
       const newQuote = await result.json();
-      console.log(newQuote);
       req.session.set("quoteId", newQuote.id);
       await req.session.save();
     }
