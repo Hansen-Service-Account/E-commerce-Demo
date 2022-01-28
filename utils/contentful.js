@@ -59,8 +59,8 @@ export const getWebPageByWebsiteIdAndPageName = async (websiteId, pageName) => {
       include: 3,
     });
     const webPage = pageName
-      ? website.items[0].fields.webPages.find(
-          (wp) => wp.fields.pageName === pageName
+      ? website.items[0].fields.webPages.find((wp) =>
+          wp.fields.pageName.includes(pageName)
         )
       : {};
     const headerNav = website.items[0].fields.headerNavigation;
