@@ -14,6 +14,7 @@ import {
   FaYoutubeSquare,
 } from "react-icons/fa";
 import { getWebPageByWebsiteIdAndPageName } from "../utils/contentful";
+import { DARK_GOLD } from "../utils/constants";
 
 export default function contactPage({
   headerNav,
